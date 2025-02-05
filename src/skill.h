@@ -1,3 +1,31 @@
+#pragma region -ee- BEGIN:  File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - In class SkillList, function lookUp()
+      - Added /* -ee- Comment out original code.
+          Then added #pragma region -ee- BEGIN:  Use printToAllPorts() instead OF PT()
+  - In Class Skill, function perform(), within while loop
+      - Added /* -ee- Comment out original code.
+          Then added #pragma region -ee- BEGIN:  Use print6Axis_ee() to get IMU data but not in packet form.
+  - In loadBySkillName()
+      - /* -ee- Comment out original code.
+          Then added #pragma region -ee- BEGIN:  Replaced original code with simpler call to skill->buildSkill(skillIndex)
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  File Changes
+
+
 #define MEMORY_ADDRESS_SIZE 4
 class SkillPreview {
 public:
@@ -29,6 +57,7 @@ public:
     for (randomMindListLength = 0; randomMindList[randomMindListLength] != NULL; randomMindListLength++)
       ;
   }
+
   int lookUp(const char* key) {
     byte nSkills = sizeof(progmemPointer) / MEMORY_ADDRESS_SIZE;
     byte randSkillIdx = strcmp(key, "x") ? nSkills : random(nSkills);
@@ -61,9 +90,17 @@ public:
         return s;
       }
     }
+
+/* -ee- Comment out original code.
     PT('?');  //key not found
     PT(key);
     PTL('?');  //it will print ?? in random mode. Why?
+*/
+
+    #pragma region -ee- BEGIN:  Use printToAllPorts() instead OF PT()
+    printToAllPorts("??? " + String(key) + " ???");     // -ee- Added.  Using "???" to make this line easier to find when searching for it in the readback (monitor) log.
+    #pragma endregion   END:  Use printToAllPorts() instead OF PT()
+
     return -1;
   }
 };
@@ -95,6 +132,7 @@ public:
     firstMotionJoint = 0;
     dutyAngles = NULL;
   }
+
   void buildSkill() {  // K token
     strcpy(skillName, "tmp");
     offsetLR = 0;
@@ -113,8 +151,10 @@ public:
     newCmd[dataLen(period)] = '~';
     formatSkill();
   }
+
   ~Skill() {
   }
+
   int dataLen(int8_t p) {
     skillHeader = p > 0 ? 4 : 7;
     frameSize = p > 1 ? WALKING_DOF :  //gait
@@ -172,7 +212,9 @@ public:
     //   }
     // }
   }
+
 #define PRINT_SKILL_DATA
+
   void info() {
     PT("Skill Name: ");
     PTL(skillName);
@@ -214,6 +256,7 @@ public:
 #endif
     PTL();
   }
+
   void mirror() {  //Create a mirror function to allow the robot to pick random directions of behaviors.
     //It makes the robot more unpredictable and helps it get rid of an infinite loop,
     //such as failed fall-recovering against a wall.
@@ -230,6 +273,7 @@ public:
       }
     }
   }
+
   int nearestFrame() {
     if (period == 1)
       frame = 0;
@@ -237,10 +281,12 @@ public:
       frame = 0;
     return frame;
   }
+
   void transformToSkill(int frame = 0) {
     //      info();
     transform(dutyAngles + frame * frameSize, angleDataRatio, transformSpeed, firstMotionJoint, period, runDelay);
   }
+
   void convertTargetToPosture(int* targetFrame) {
     int extreme[2];
     getExtreme(targetFrame, extreme);
@@ -256,6 +302,7 @@ public:
     frameSize = DOF;
     frame = 0;
   }
+
   void perform() {
     if (period < 0) {  //behaviors
       int8_t repeat = loopCycle[2] >= 0 && loopCycle[2] < 2 ? 0 : loopCycle[2] - 1;
@@ -276,7 +323,12 @@ public:
           long triggerTimer = millis();
           while (1) {
             read_IMU();
-            print6Axis();
+            /* -ee- Comment out original code.
+            print6Axis ();
+            */
+            #pragma region -ee- BEGIN:  Use print6Axis_ee() to get IMU data but not in packet form.
+            print6Axis_ee(false);
+            #pragma endregion   END:  Use print6Axis_ee() to get IMU data but not in packet form.
             currentYpr = ypr[abs(triggerAxis)];
             PT(currentYpr);
             PTF("\t");
@@ -300,7 +352,9 @@ public:
         }
       }
       printToAllPorts(token);
-    } else {  //postures and gaits
+    } 
+
+    else {  //postures and gaits
 #ifdef GYRO_PIN
       if (imuUpdated && gyroBalanceQ && !(frame % imuSkip)) {
         //          PT(ypr[2]); PT('\t');
@@ -362,7 +416,14 @@ void loadBySkillName(const char* skillName) {  //get lookup information from on-
     //   delete[] skill;
     char lr = skillName[strlen(skillName) - 1];
     skill->offsetLR = (lr == 'L' ? 30 : (lr == 'R' ? -30 : 0));
+
+    /* -ee- Comment out original code.
     skill->buildSkill(skillList->get(skillIndex)->index);
+    */
+    #pragma region -ee- BEGIN:  Replaced original code with simpler call to skill->buildSkill(skillIndex)
+    skill->buildSkill(skillIndex);    // -ee- This is simpler and seems to work
+    #pragma endregion   END:  Replaced original code with simpler call to skill->buildSkill(skillIndex)
+
     strcpy(newCmd, skill->skillName);
     if (strcmp(newCmd, "calib") && skill->period == 1)
       protectiveShift = esp_random() % 100 / 10.0 - 5;

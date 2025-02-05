@@ -1,3 +1,24 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - In i2cEepromSetup()
+      - /* -ee- Comment out original code.  Disable the bootup melody.
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 /* Write and read long data string to I2C EEPROM
    maximum is 65536 bit. i.e. address stops at 65535.
    Extra data will wrap over to address 0
@@ -323,7 +344,11 @@ void i2cEepromSetup() {
 #endif
   } else {
     resetIfVersionOlderThan(SoftwareVersion);
+
+/* -ee- Comment out original code.  Disable the bootup melody.
     playMelody(melodyNormalBoot, sizeof(melodyNormalBoot) / 2);
+*/
+
     for (byte i = 0; i < sizeof(moduleList) / sizeof(char); i++)
       moduleActivatedQ[i] = i2c_eeprom_read_byte(EEPROM_MODULE_ENABLED_LIST + i);
   }

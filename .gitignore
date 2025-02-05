@@ -5,3 +5,26 @@
 *.cfg
 *.svd
 debug_custom.json
+
+# Personal Ignore Files
+*.doc*
+*.xls*
+.ppt*
+*@.*
+*@
+*@/
+_Temp/
+Support/
+
+
+# Visual Studio Files
+*.sln
+*vcxproj*
+.gitattributes
+
+# Visual Micro Files
+__vm*
+__vm/*
+Compile.vmps.xml
+Configuration.Debug.vmps.xml
+Upload.vmps.xml

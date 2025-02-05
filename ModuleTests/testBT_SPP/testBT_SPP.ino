@@ -18,17 +18,24 @@ void loop() {
   if (!BTconnected) {
 
     if (SerialBT.available()) {
-      SerialBT.println(F("\n* Start *"));
-      SerialBT.println(F("petoi"));
+      //SerialBT.println(F("\n* Start *"));
+      //SerialBT.println(F("petoi"));
       delay(10);
       BTconnected = true;
     }
   }
   if (Serial.available()) {
+    //Serial.println(F("\nPrinting on Serial.println Serial Available"));
+    //SerialBT.println(F("\nPrinting on SerialBT.println Serial Available"));
     SerialBT.write(Serial.read());
   }
   if (SerialBT.available()) {
+    //Serial.println(F("\nPrinting on Serial.println SerialBT Available"));
+    //SerialBT.println(F("\nPrinting on SerialBT.println SerialBT Available"));
     Serial.write(SerialBT.read());
   }
   delay(20);
+  //Serial.println(F("\nPrinting on Serial.println In Delay"));
+  //SerialBT.println(F("\nPrinting on SerialBT.println In Delay"));
+  
 }

@@ -1,3 +1,28 @@
+// This is Project https://github.com/este-este/OpenCatEsp32_este, a fork of https://github.com/PetoiCamp/OpenCatEsp32.
+// See "/src/este.h" in the project folder for project documentation and a list of files that were modified from the original source code.
+
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - Added:  // -ee- Exercise caution with AUTO_INIT...
+  - Added:  // -ee- VOICE needs to be defined in order to send the "XAd" command to stop the voice module from listening.
+  - Added:  #include "src/este.h"  // -ee- Added       < placed after #include "src/OpenCat.h" >
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - #define VOICE
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 // modify the model and board definitions
 //***********************
 #define BITTLE  // Petoi 9 DOF robot dog: 1 on head + 8 on leg
@@ -10,11 +35,11 @@
 //***********************
 
 // Send '!' token to reset the birthmark in the EEPROM so that the robot will restart to reset
-// #define AUTO_INIT  //activate it to automatically reset joint and imu calibration without prompts
+//#define AUTO_INIT  //activate it to automatically reset joint and imu calibration without prompts    // -ee- Exercise caution with AUTO_INIT...
 
 // you can also activate the following modes (they will diable the gyro to save programming space)
 // allowed combinations: RANDOM_MIND + ULTRASONIC, RANDOM_MIND, ULTRASONIC, VOICE, CAMERA
-#define VOICE  // Petoi Grove voice module
+#define VOICE  // Petoi Grove voice module    // -ee- VOICE needs to be defined in order to send the "XAd" command to stop the voice module from listening.
 #define ULTRASONIC
 #define PIR                       //for PIR (Passive Infrared) sensor
 #define DOUBLE_TOUCH              //for double touch sensor
@@ -25,13 +50,14 @@
 // You need to install https://github.com/mu-opensource/MuVisionSensor3 as a zip library in Arduino IDE.
 // Set the four dial switches on the camera as **v ^ v v** (the second switch dialed up to I2C) and connect the camera module to the I2C grove on NyBoard.
 // The battery should be turned on to drive the servos.
-//
+//  
 // You can use these 3D printed structures to attach the camera module.
 // https://github.com/PetoiCamp/NonCodeFiles/blob/master/stl/MuIntelligentCamera_mount.stl
 // https://github.com/PetoiCamp/NonCodeFiles/blob/master/stl/bone.stl
 // After uploading the code, you may need to press the reset buttons on the module and then the NyBoard.
 // The tracking demo works the best with a yellow tennis ball or some other round objects. Demo: https://www.youtube.com/watch?v=CxGI-MzCGWM
 #include "src/OpenCat.h"
+#include "src/este.h"  // -ee- Added
 
 void setup() {
   // put your setup code here, to run once:

@@ -1,8 +1,25 @@
 #include "esp32-hal.h"
 /*
-    Video: https://www.youtube.com/watch?v=oCMOYS71NIU
-    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
-    Ported to Arduino ESP32 by Evandro Copercini
+    Videos: 
+    July 2, 2017 - ESP32 Technical Tutorials: BLE and C++
+                    https://www.youtube.com/watch?v=2_vlF_02VXk 
+    July 5, 2017 - ESP32 Technical Tutorials: BLE, C++ and Notifications
+                    https://www.youtube.com/watch?v=WGozJXuQ8dY 
+    July 16, 2017 - ESP32 Technical Tutorials: BLE Notifications
+                    https://www.youtube.com/watch?v=oCMOYS71NIU
+
+    Other References:
+    https://nathanmelenbrink.github.io/lab/networking/huzzah3.html 
+    https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ble.html 
+    https://learn.sparkfun.com/tutorials/esp32-thing-plus-hookup-guide/arduino-example-esp32-ble
+
+    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp (broken)
+                          corrected URL:  https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLETests/SampleNotify.cpp
+        Main repo at:  https://github.com/nkolban/esp32-snippets
+        See this Arduino section:  https://github.com/nkolban/esp32-snippets/tree/master/cpp_utils/tests/BLETests/Arduino 
+
+    Ported to Arduino ESP32 by Evandro Copercini (see https://github.com/copercini)
+        See his post here:  https://docs.espressif.com/projects/arduino-esp32/en/latest/api/bluetooth.html
 
    Create a BLE server that, once we receive a connection, will send periodic notifications.
    The service advertises itself as: 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
@@ -49,6 +66,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   }
 };
 byte bleMessageShift = 1;
+
 class MyCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
     std::string rxValue = pCharacteristic->getValue();

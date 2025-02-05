@@ -1,3 +1,28 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - Before:  //**********************           Calibration Routines
+      - Added:  #pragma region -ee- BEGIN:  <merge> Added #define PTL(s) and PTLF(s).
+  - In MPU6050::CalibrateGyro()
+      - Added:  #pragma region -ee- BEGIN:  <merge> Added PTL("CalibrateGyro x = " + String(x));
+  - In MPU6050::CalibrateAccel()
+      - Added:  #pragma region -ee- BEGIN:  <merge> Added PTL("CalibrateAccel x = " + String(x));
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 // I2Cdev library collection - MPU6050 I2C device class
 // Based on InvenSense MPU-6050 register map document rev. 2.0, 5/19/2011 (RM-MPU-6000A-00)
 // 8/24/2011 by Jeff Rowberg <jeff@rowberg.net>
@@ -3261,6 +3286,10 @@ void MPU6050::setDMPConfig2(uint8_t config) {
     I2Cdev::writeByte(devAddr, MPU6050_RA_DMP_CFG_2, config);
 }
 
+#pragma region -ee- BEGIN:  <merge> Added #define PTL(s) and PTLF(s).
+#define PTL(s) Serial.println(s)      // -ee- Added.
+#define PTLF(s) Serial.println(F(s))  // -ee- Added.
+#pragma endregion   END:  <merge> Added #define PTL(s) and PTLF(s).
 
 //***************************************************************************************
 //**********************           Calibration Routines            **********************
@@ -3273,6 +3302,12 @@ void MPU6050::CalibrateGyro(uint8_t Loops ) {
   double kI = 90;
   float x;
   x = (100 - map(Loops, 1, 5, 20, 0)) * .01;
+
+#pragma region -ee- BEGIN:  <merge> Added PTL("CalibrateGyro x = " + String(x));
+  PTL("");                                // -ee- Added.
+  PTL("CalibrateGyro x = " + String(x));  // -ee- Added.
+#pragma endregion   END:  <merge> Added PTL("CalibrateGyro x = " + String(x));
+
   kP *= x;
   kI *= x;
   
@@ -3288,8 +3323,15 @@ void MPU6050::CalibrateAccel(uint8_t Loops ) {
 	float kI = 20;
 	float x;
 	x = (100 - map(Loops, 1, 5, 20, 0)) * .01;
+
+#pragma region -ee- BEGIN:  <merge> Added PTL("CalibrateAccel x = " + String(x));
+  PTL("");                                 // -ee- Added.
+  PTL("CalibrateAccel x = " + String(x));  // -ee- Added.
+#pragma endregion   END  <merge> Added PTL("CalibrateAccel x = " + String(x));
+
 	kP *= x;
 	kI *= x;
+
 	PID( 0x3B, kP, kI,  Loops);
 }
 

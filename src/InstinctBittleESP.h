@@ -1,5 +1,70 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - Edited:  // -ee- (19 Gaits, 11 Postures, 32 Behaviors
+  - Added:
+      - #pragma region -ee- <doc> BEGIN:  Gaits
+      - #pragma region -ee- BEGIN:  <doc> Postures
+      - #pragma region -ee- BEGIN:  <doc> Behaviors
+  - Added:  #pragma region -ee- BEGIN:  <merge> Restructured const char* skillNameWithType[] {} to group skills and leave room for custom ones.
+      - Restructured const char* skillNameWithType[]={
+        to create these sections:
+         //Gaits
+            // -ee- Custom ones added on this line here.
+         //Postures
+            // -ee- Custom ones added on this line here.
+         //Behaviors
+            // -ee- Custom ones added on this line here.
+  - Before const int8_t* progmemPointer[]
+      - Added:  // -ee- For the BiBoard with ESP32, there is "plenty" of flash RAM so MAIN_SKETCH is never defined and the skills are in flash RAM, not in EEPROM.
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-01-16a
+
+          CHANGES:
+  
+  - Edited  // -ee- (19 Gaits, 11 Postures, 32 Behaviors
+  - Added
+      - #pragma region and #pragma endregion
+          For
+          - #pragma region -ee- BEGIN:  Gaits.
+          - #pragma region -ee- BEGIN:  Postures.
+          - #pragma region -ee- BEGIN:  Behaviors.
+      - const int8_t mnwk[] PROGMEM = {      // -ee- Added from Bittle_MoonWalk.md.    //TODO delete later
+  - Restructured const char* skillNameWithType[]={
+     //Gaits
+         // -ee- Custom ones added here.
+     //Postures
+         // -ee- Custom ones added here.
+     //Behaviors
+     "mnwkI",    // -ee- Custom ones added here.
+ - Added comment  // -ee- For the BiBoard with ESP32, there is "plenty" of flash RAM so MAIN_SKETCH is never defined and the skills are in flash RAM, not in EEPROM.
+
+          ENABLED / DISABLED:
+  
+  - 
+*/
+
+
 #define BITTLE
 //number of skills: 62
+// -ee- 19 Gaits, 11 Postures, 32 Behaviors
+
+#pragma region -ee- <doc> BEGIN:  Gaits
 
 const int8_t bdF[] PROGMEM = { 
 37, 0, 0, 1,
@@ -1169,6 +1234,10 @@ const int8_t wkL[] PROGMEM = {
   49,  53,  63,  51,  -2,  12,  -2,   2,
   48,  54,  61,  51,  -2,  12,  -3,   2,
 };
+#pragma endregion   END:  <doc> Gaits
+
+
+#pragma region -ee- BEGIN:  <doc> Postures
 
 const int8_t balance[] PROGMEM = { 
 1, 0, 0, 1,
@@ -1203,6 +1272,10 @@ const int8_t up[] PROGMEM = {
 const int8_t zero[] PROGMEM = { 
 1, 0, 0, 1,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,};
+#pragma endregion   END:  <doc> Postures
+
+
+#pragma region -ee- BEGIN:  <doc> Behaviors
 
 const int8_t ang[] PROGMEM = { 
 -7, 0, 0, 1,
@@ -1588,15 +1661,39 @@ const int8_t zz[] PROGMEM = {
  0, 0, 0, 
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,	 4, 0, 0, 0,
 };
-  const char* skillNameWithType[]={"bdFI","bkI","bkLI","crFI","crLI","gpFI","gpLI","hlwI","jpFI","lftFI","lftLI","phFI","phLI","trFI","trLI","vtFI","vtLI","wkFI","wkLI","balanceI","buttUpI","calibI","droppedI","liftedI","lndI","restI","sitI","strI","upI","zeroN","angI","bfI","bxI","chrI","ckI","cmhI","dgI","ffI","fivI","gdbI","hdsI","hgI","hiI","hskI","huI","jmpI","kcI","lpovI","mwI","ndI","pdI","peeI","puI","pu1I","rcI","rlI","scrhI","snfI","tblI","tsI","whI","zzI",};
+#pragma endregion   END:  <doc> Behaviors
+
+#pragma region -ee- BEGIN:  <merge> Restructured const char* skillNameWithType[] {} to group skills and leave room for custom ones.
+#pragma endregion   END:  <merge> 
+  const char* skillNameWithType[]={
+
+    //Gaits
+        // -ee- Custom ones added on this line here.
+    "bdFI", "bkI",  "bkLI", "crFI", "crLI", "gpFI", "gpLI", "hlwI", "jpFI", "lftFI", "lftLI", "phFI", "phLI",
+    "trFI", "trLI", "vtFI", "vtLI", "wkFI", "wkLI",
+
+    //Postures
+        // -ee- Custom ones added on this line here.
+    "balanceI","buttUpI","calibI","droppedI","liftedI","lndI","restI","sitI","strI","upI","zeroN",
+
+    //Behaviors
+        // -ee- Custom ones added on this line here.
+    "angI",  "bfI",  "bxI",  "chrI", "ckI",   "cmhI", "dgI", "ffI", "fivI", "gdbI", "hdsI", "hgI", "hiI",
+    "hskI",  "huI",  "jmpI", "kcI",  "lpovI", "mwI",  "ndI", "pdI", "peeI", "puI",  "pu1I", "rcI", "rlI",
+    "scrhI", "snfI", "tblI", "tsI",  "whI",   "zzI",};
+
 #if !defined(MAIN_SKETCH) || !defined(I2C_EEPROM)
 		//if it's not the main sketch to save data or there's no external EEPROM, 
 		//the list should always contain all information.
+
+// -ee- For the BiBoard with ESP32, there is "plenty" of flash RAM so MAIN_SKETCH is never defined and the skills are in flash RAM, not in EEPROM.
   const int8_t* progmemPointer[] = {bdF, bk, bkL, crF, crL, gpF, gpL, hlw, jpF, lftF, lftL, phF, phL, trF, trL, vtF, vtL, wkF, wkL, balance, buttUp, calib, dropped, lifted, lnd, rest, sit, str, up, zero, ang, bf, bx, chr, ck, cmh, dg, ff, fiv, gdb, hds, hg, hi, hsk, hu, jmp, kc, lpov, mw, nd, pd, pee, pu, pu1, rc, rl, scrh, snf, tbl, ts, wh, zz, };
+
 #else	//only need to know the pointers to newbilities, because the intuitions have been saved onto external EEPROM,
 	//while the newbilities on progmem are assigned to new addresses
   const int8_t* progmemPointer[] = {zero, };
 #endif
+
 //the total byte of instincts is 14528
 //the maximal array size is 933 bytes of wkL. 
 //Make sure to leave enough memory for SRAM to work properly. Any single skill should be smaller than 400 bytes for safety.

@@ -1,3 +1,37 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - In section // orientation/motion vars
+      - Added:  // -ee- no, in degrees, not radians since #define OUTPUT_READABLE_YAWPITCHROLL is enabled.
+  - In print6Axis()
+      - Added:
+      -   PT(millis() / 1000);        // -ee- Added.     //TODO add these two lines to print6Axis_ee, maybe in the #define PRINT_6_AXIS_TESTING section
+      -   PT('\t');                   // -ee- Added.
+  - Added:  // -ee- Forward declare printToAllPorts().
+      Then added:  template<typename T> void printToAllPorts(T text);  // -ee- Added
+  - Added:  #pragma region -ee- BEGIN:   print6Axis_ee()
+  - In #ifdef OUTPUT_READABLE_YAWPITCHROLL
+      - Added:  // -ee- degrees, not radians since #define OUTPUT_READABLE_YAWPITCHROLL is enabled.
+  - In read_IMU()
+      - Added:  /*  -ee- Comment out original code.
+          Then added:  #pragma region -ee- BEGIN:  <merge> Using print6Axis_ee()
+  - Added:  #pragma region -ee- BEGIN:  imuCalibrate_ee()
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 // I2C device class (I2Cdev) demonstration Arduino sketch for MPU6050 class using DMP (MotionApps v6.12)
 // 6/21/2012 by Jeff Rowberg <jeff@rowberg.net>
 // Updates should (hopefully) always be available at https://github.com/jrowberg/i2cdevlib
@@ -143,7 +177,7 @@ VectorInt16 aaReal;   // [x, y, z]            gravity-free accel sensor measurem
 VectorInt16 aaWorld;  // [x, y, z]            world-frame accel sensor measurements
 VectorFloat gravity;  // [x, y, z]            gravity vector
 float euler[3];       // [psi, theta, phi]    Euler angle container
-float ypr[3];         // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector. unit is radian
+float ypr[3];         // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector. unit is radian   // -ee- no, in degrees, not radians since #define OUTPUT_READABLE_YAWPITCHROLL is enabled.
 int16_t *xyzReal[3] = { &aaReal.x, &aaReal.y, &aaReal.z };
 int16_t previous_xyzReal[3];
 float previous_ypr[3];
@@ -177,8 +211,11 @@ void dmpDataReady() {
 // The REALACCEL numbers are calculated with respect to the orientation of the sensor itself, so that if it is flat and you move it straight up, the "Z" accel will change, but if you flip it up on one side and move it in the new relative "up" direction (along the sensor's Z axis), it will still register acceleration on the Z axis. Essentially, it is sensor-oriented acceleration which removes the effects of gravity and any non-flat/level orientation.
 
 // The WORLDACCEL numbers are calculated to ignore orientation. Moving it straight up while flat will look the same as the REALACCEL numbers, but if you then flip it upside-down and do the exact same movement ("up" with respect to you), you'll get exactly the same numbers as before, even though the sensor itself is upside-down.
+
 #define READ_ACCELERATION
 void print6Axis() {
+  PT(millis() / 1000);        // -ee- Added.     //TODO add these two lines to print6Axis_ee, maybe in the #define PRINT_6_AXIS_TESTING section
+  PT('\t');                   // -ee- Added.
   PT_FMT(ypr[0], 2);
   PT('\t');
   PT_FMT(ypr[1], 2);
@@ -199,6 +236,182 @@ void print6Axis() {
 #endif
   PTL();
 }
+
+// -ee- Added Forward declare printToAllPorts() since it is used in print6Axis_ee() below.
+template<typename T> void printToAllPorts(T text);  // -ee- Added
+
+#pragma region -ee- BEGIN:   print6Axis_ee()
+
+//#define PRINT_6_AXIS_TESTING                             // -ee- Default is off, unless testing.
+//#define PRINT_6_AXIS___READ_ALL___YPR_PLUS_ACCELERATION  // -ee- Default is off.
+//#define PRINT_6_AXIS___SHOW_COLUMN_TITLES                // -ee- Default is off.
+
+void print6Axis_ee(bool createPacketQ)  // -ee- Added
+{
+  /*
+      Purpose:  To create a packet of IMU data for consumption by a robot controller computer.
+      Author:   este este
+  */
+
+  String timeStamp = String(millis() );
+  String extraPadding = "";
+
+  String startPacket = "";  //default is no packet
+  String endPacket = "";    //default is no packet
+
+  if (createPacketQ)
+  {
+    startPacket = "[";
+    endPacket = "]";
+  }
+
+  // -ee- uncomment next line except for testing.
+//  timeStamp = "1234567890";   //max value = "4294967295"
+
+#ifdef  PRINT_6_AXIS_TESTING
+
+  PT('\t');
+  PT(ypr[0]);
+  PT("\t");
+  PT(ypr[1]);
+  PT('\t');
+  PT(ypr[2]);
+
+  PT('\t');
+  PT(*xyzReal[0]);
+  PT("\t");
+  PT(*xyzReal[1]);
+  PT('\t');
+  PT(*xyzReal[2]);
+  PT("\t");
+  PT(aaWorld.z);
+
+  PTL();
+  return;
+
+#endif  //PRINT_6_AXIS_TESTING
+
+  if (timeStamp.length() >= 9)
+  {
+    extraPadding = "\t";
+  }
+
+#ifdef PRINT_6_AXIS___SHOW_COLUMN_TITLES
+  //print column titles
+  printToAllPorts("\t\ttime" + 
+    extraPadding +                  //Extra tab before yaw when timeStamp is >= 9 chars
+    "\tyaw\tpitch\troll"
+    #ifdef  PRINT_6_AXIS___READ_ALL___YPR_PLUS_ACCELERATION
+    "\tXreal\tYreal\tZreal\tZworld"
+    #endif  //PRINT_6_AXIS___READ_ALL___YPR_PLUS_ACCELERATION
+  );
+#endif  //PRINT_6_AXIS___SHOW_COLUMN_TITLES
+
+//TODO:  -ee- Deprecated but KEEP.  It turns out that the following conversions are not actually needed.
+
+    /*  -ee- 
+        Convert ypr data from floating point values to decimal strings with fixed decimal places.
+        Maximum width of each datum is 8 with a layout of [-XXX.XX\0]
+    */
+
+  //yaw:  rotation about z-axis (head left / right)
+  char ypr0[8];                 // -ee- char array to hold formatted value.
+  dtostrf(ypr[0], 3, 2, ypr0);  // -ee- format the value.
+
+  //pitch:  rotation about y-axis (head up / down)
+  char ypr1[8];
+  dtostrf(ypr[1], 3, 2, ypr1);
+
+  //roll:  rotation about x-axis (side up / down)
+  char ypr2[8];
+  dtostrf(ypr[2], 3, 2, ypr2);
+
+  //TODO:  -ee- Deprecated but KEEP.  It turns out that the following conversions are not actually needed.
+
+      /*  -ee- 
+        Convert xyzReal and aaWorld data from floating point values to decimal strings with fixed decimal places.
+        Maximum width of each datum is 11 with a layout of [-XXXXX.XX\0]
+    */
+
+        /*  -ee- 
+            xyzReal is acceleration relative to the orientation of the BiBoard (well, the IMU sensor on the BiBoard actually).
+            aaWorld is acceleration relative to the outside world.
+                With the robot "right side up:
+                      mMving the robot up is positive acceleration in both the "Real" frame and in the "World" frame.
+                With the robot "upside up":
+                      Moving the robot up is negative acceleration in the "Real" frame but positive acceleration in the "World" frame.
+        */
+
+//Real frame (gravity ignored) acceleration along the x-axis (along the longer direction of the robot).
+  char xyzReal0[11];                 // -ee- char array to hold formatted value.
+  dtostrf(*xyzReal[0], 5, 2, xyzReal0);  // -ee- format the value.
+
+// -ee- Real frame (gravity ignored) acceleration along the y-axis (along the shorter direction of the robot).
+  char xyzReal1[11];
+  dtostrf(*xyzReal[1], 5, 2, xyzReal1);
+
+// -ee- Real frame (gravity ignored) acceleration along the z-axis (up and perpendicular to the xy plane).
+  char xyzReal2[11];
+  dtostrf(*xyzReal[2], 5, 2, xyzReal2);
+
+// -ee- World-frame (gravity corrected) acceleration along the z-axis.
+  char aaWorldZ[11];
+  dtostrf(aaWorld.z, 5, 2, aaWorldZ);
+
+
+  /*  Create packet:
+        @   Start the packet
+              "\t" is used as a spacer but is not part of the packet.
+              "[" starts the packet and "I-H" or "I-A" identifies the packet.  The character sequence is followed by a tab.
+        @   The packet
+              millis() followed by IMU data, all delimited by tabs
+        @   End the packet
+              "]" ends the packet.
+
+        Example:	"	[I-H	4294967295	1.00	-3.51	2.13	]"
+  */
+
+//Using millis() next, which is the time since boot up in milliseconds.  
+//Value is an unsigned long (4 bytes = 32 bits) so the max value = 4,294,967,295   (10 digits since there are no commas!)
+
+#ifndef PRINT_6_AXIS___READ_ALL___YPR_PLUS_ACCELERATION
+  char packet[45];       //1 + 4 + (10 + 1) + ( (1 + 8) * 3 ) + 1 + 1 = 45 characters, max, in the packet.
+  sprintf(packet, 
+    "\t%s"                     //Start the packet.
+    "I-H"                       //Identify the packet.  I-H = "IMU, Heading" values only (ypr only).
+    "\t%s\t%s\t%s\t%s"          //Contents of the packet with each datum delimited by tabs.
+    "\t%s",                     //End the packet.
+//    ypr0, ypr1, ypr2                                                    // -ee- This is deprecated.
+startPacket,
+    timeStamp,
+        String(ypr[0]), String(ypr[1]), String(ypr[2]),      // -ee- This  works without the deprecated calculations.
+endPacket
+  );
+#endif  // !PRINT_6_AXIS___READ_ALL___YPR_PLUS_ACCELERATION
+
+
+#ifdef PRINT_6_AXIS___READ_ALL___YPR_PLUS_ACCELERATION
+  char packet[81];       //1 + 4 + (10 + 1) + ( (1 + 8) * 7 ) + 1 + 1 = 81 characters, max, in the packet.
+  sprintf(packet, 
+    "\t%s"                              //Start the packet.
+    "I-A"                               //Identify the packet.  I-A = "IMU, All" values (ypr plus acceleration).
+    "\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s"  //Contents of the packet with each datum delimited by tabs.
+    "\t%s",                             //End the packet.
+//    ypr0, ypr1, ypr2, xyzReal0, xyzReal1, xyzReal2, aaWorldZ                      // -ee- This is deprecated.
+startPacket,
+    timeStamp,
+        String(ypr[0]), String(ypr[1]), String(ypr[2]),              // -ee- This  works without the deprecated calculations.
+        String(*xyzReal[0]), String(*xyzReal[1]), String(*xyzReal[2]), String(aaWorld.z),
+endPacket
+  );
+#endif  // PRINT_6_AXIS___READ_ALL___YPR_PLUS_ACCELERATION
+
+  printToAllPorts(packet);
+//  printToAllPorts("");    // -ee- send blank line.
+
+}
+#pragma endregion   END:   print6Axis_ee()
+
 
 void print6AxisMacro() {
 #ifdef OUTPUT_READABLE_QUATERNION
@@ -227,6 +440,7 @@ void print6AxisMacro() {
 
 #ifdef OUTPUT_READABLE_YAWPITCHROLL
   // display angles in degrees
+    // -ee- degrees, not radians since #define OUTPUT_READABLE_YAWPITCHROLL is enabled.
   PT("ypr\t");
   PT(ypr[0]);
   PT("\t");
@@ -300,7 +514,22 @@ bool read_IMU() {
 #endif
     }
     if (printGyro)
+      /*  -ee- Comment out original code.
       print6Axis();
+      */
+
+      #pragma region -ee- BEGIN:  <merge> Using print6Axis_ee()
+
+      {
+        if (print6AxisCounter % printGyroSkipNum == 0)  // check the interval.
+          {
+            print6Axis_ee(true);  // print IMU data.
+            print6AxisCounter = print6AxisCounterStart;  // reset the counter.
+          }
+        print6AxisCounter++;  // increment the counter.
+      }
+      #pragma endregion   END:  <merge> Using print6Axis_ee()
+
     // exceptions = aaReal.z < 0 && fabs(ypr[2]) > 85;  //the second condition is used to filter out some noise
 
     // Acceleration Real
@@ -393,33 +622,35 @@ void imuSetup() {
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
     // Calibration Time: generate offsets and calibrate our MPU6050
-    if (newBoard) {
-#ifndef AUTO_INIT
-      PTL("- Calibrate the Inertial Measurement Unit (IMU)? (Y/n): ");
-      char choice = getUserInputChar();
-      PTL(choice);
-      if (choice == 'Y' || choice == 'y') {
-#else
-      PTL("- Calibrate the Inertial Measurement Unit (IMU)...");
-#endif
-        PTLF("\nPut the robot FLAT on the table and don't touch it during calibration.");
-#ifndef AUTO_INIT
-        beep(8, 500, 500, 5);
-#endif
-        beep(15, 500, 500, 1);
-        mpu.CalibrateAccel(20);
-        mpu.CalibrateGyro(20);
-        i2c_eeprom_write_int16(EEPROM_IMU, mpu.getXAccelOffset());
-        i2c_eeprom_write_int16(EEPROM_IMU + 2, mpu.getYAccelOffset());
-        i2c_eeprom_write_int16(EEPROM_IMU + 4, mpu.getZAccelOffset());
-        i2c_eeprom_write_int16(EEPROM_IMU + 6, mpu.getXGyroOffset());
-        i2c_eeprom_write_int16(EEPROM_IMU + 8, mpu.getYGyroOffset());
-        i2c_eeprom_write_int16(EEPROM_IMU + 10, mpu.getZGyroOffset());
-        beep(18, 50, 50, 6);
-#ifndef AUTO_INIT
+    if (newBoard)
+    {
+      #ifndef AUTO_INIT
+      PTL ("- Calibrate the Inertial Measurement Unit (IMU)? (Y/n): ");
+      char choice = getUserInputChar ();
+      PTL (choice);
+      if (choice == 'Y' || choice == 'y')
+      {
+        #else
+      PTL ("- Calibrate the Inertial Measurement Unit (IMU)...");
+      #endif
+      PTLF ("\nPut the robot FLAT on the table and don't touch it during calibration.");
+      #ifndef AUTO_INIT
+      beep (8, 500, 500, 5);
+      #endif
+      beep (15, 500, 500, 1);
+      mpu.CalibrateAccel (20);
+      mpu.CalibrateGyro (20);
+      i2c_eeprom_write_int16 (EEPROM_IMU, mpu.getXAccelOffset ());
+      i2c_eeprom_write_int16 (EEPROM_IMU + 2, mpu.getYAccelOffset ());
+      i2c_eeprom_write_int16 (EEPROM_IMU + 4, mpu.getZAccelOffset ());
+      i2c_eeprom_write_int16 (EEPROM_IMU + 6, mpu.getXGyroOffset ());
+      i2c_eeprom_write_int16 (EEPROM_IMU + 8, mpu.getYGyroOffset ());
+      i2c_eeprom_write_int16 (EEPROM_IMU + 10, mpu.getZGyroOffset ());
+      beep (18, 50, 50, 6);
+      #ifndef AUTO_INIT
       }
-#endif
-      mpu.PrintActiveOffsets();
+    #endif
+    mpu.PrintActiveOffsets ();
     }
     // turn on the DMP, now that it's ready
     PTLF("- Enabling DMP...");
@@ -458,6 +689,61 @@ void imuSetup() {
   exceptions = aaReal.z < 0;
   previous_ypr[0] = ypr[0];
 }
+
+
+#pragma region -ee- BEGIN:  imuCalibrate_ee()
+
+void imuCalibrate_ee()  // -ee- This is meant to be called in este.h, within tokenExtenderQ(), under switch case T_PRINT_GYRO: but we are  using the modified imSetup() for now.
+{
+  /*  -ee- 
+    Summary:  
+    This function is currently a subset of the code in original imuSetup() [imu.h].  It is used to periodically calibrate the MPU6050 Inertial Measurement Unit (IMU) to minimize the effects of drift, especially rotational yaw drift about the Z axis.  
+    
+    Details:
+    This IMU uses a "6-axis" IMU which means it has a 3-axis gyroscope to measure rotation about the X, Y and Z axis and a 3-axis accelerometer to measure acceleration (and therefore displacement) in the X, Y and Z direction.  The accelerometers are used to compensate for pitch and roll rotational drift about the X and Y axes, respectively since they can use the gravity acceleration vector.  However, this approach is ineffective in compensating for yaw drift since it is rotation in the XY plane about the Z axis and has no gravity vector component.  In 9-axis IMUs, a 3-axis magnetometer is added which gives a magnetic vector in the XY plane that can be used to compensate for yaw drift.  
+
+    However, we don't have such an IMU on the BiBoard, so dealing with yaw drift in a "6-axis" IMU is challenging.  The approach we will use is to calibrate (and therefore re-zero) the IMU before relying on it for inertial guidance.  
+
+    Note:  This coded originates from imuSetup() [imu.h]
+
+    Currently, this function is called in these locations:
+      @ tokenExtenderQ() [este.h] under switch case T_PRINT_GYRO:
+  */
+
+  Wire.setClock(400000);  // 400kHz I2C clock. Comment this line if having compilation difficulties
+  mpu.initialize();
+  pinMode(INTERRUPT_PIN, INPUT);
+  devStatus = mpu.dmpInitialize();        // -ee- DMP = Digital Motion Processor.  See https://mjwhite8119.github.io/Robots/mpu6050
+
+  for (byte m = 0; m < 6; m++)
+    imuOffset[m] = i2c_eeprom_read_int16(EEPROM_IMU + m * 2);
+  // supply the gyro offsets here, scaled for min sensitivity
+  mpu.setXAccelOffset(imuOffset[0]);
+  mpu.setYAccelOffset(imuOffset[1]);
+  mpu.setZAccelOffset(imuOffset[2]);  //gravity
+  mpu.setXGyroOffset(imuOffset[3]);   //yaw
+  mpu.setYGyroOffset(imuOffset[4]);   //pitch
+  mpu.setZGyroOffset(imuOffset[5]);   //roll
+  mpu.PrintActiveOffsets();
+
+  PTL("Calibrating IMU with " + String(numLoops) + " loops ....");       // -ee- numLoops is initialized in OpenCat.h
+  mpu.CalibrateAccel(numLoops);                                          // -ee- Original value = 20
+  mpu.CalibrateGyro(numLoops);                                           // -ee- Original value = 20
+  i2c_eeprom_write_int16(EEPROM_IMU, mpu.getXAccelOffset());
+  i2c_eeprom_write_int16(EEPROM_IMU + 2, mpu.getYAccelOffset());
+  i2c_eeprom_write_int16(EEPROM_IMU + 4, mpu.getZAccelOffset());
+  i2c_eeprom_write_int16(EEPROM_IMU + 6, mpu.getXGyroOffset());
+  i2c_eeprom_write_int16(EEPROM_IMU + 8, mpu.getYGyroOffset());
+  i2c_eeprom_write_int16(EEPROM_IMU + 10, mpu.getZGyroOffset());
+  mpu.PrintActiveOffsets();
+
+  mpu.setDMPEnabled(true);
+  mpuIntStatus = mpu.getIntStatus();
+
+  read_IMU();
+}
+#pragma endregion   END:  imuCalibrate_ee()
+
 
 // ================================================================
 // ===                    MAIN PROGRAM LOOP                     ===

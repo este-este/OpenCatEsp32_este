@@ -1,7 +1,43 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - In dealWithExceptions()
+      - Added:  // -ee- Robot dropped.
+      - Added:  // -ee- Robot flipped over.
+      - Added:  // -ee- Robot manually pushed or rotated.
+      - Added:  // -ee- Robot manually pushed or rotated.
+  - Added:  // -ee- Forward Declaration:  The following function is defined in este.h and used here in reaction() [reaction.h]. 
+      Then added:  bool tokenExtenderQ(char _token, char* _newCmd, bool verboseQ, String tokenHelp, bool& _tokenQ);   // -ee- 
+  - In reaction(), within switch
+      - Added:  comments to case T_QUERY:, case T_NAME:
+          - Modified T_NAME:, by wrapping the pre-existing code in a lambda then conditionally called that lambda.
+      - Modified:  T_GYRO_BALANCE, T_PRINT_GYRO, T_VERBOSELY_PRINT_GYRO behaviors using  tokenExtenderQ()
+      - Added:  new cases for tokens T_DISPLAY_MORE_INFO, T_IMU_READ_DATA, T_SUPER_TOKEN
+      - Modified:  case T_SAVE: with #pragma region -ee- BEGIN:  <merge> Give message that T_SAVE is disabled.
+      - Modified:  case T_RESET: with #pragma region -ee- BEGIN:  <merge> Added the ability to abort.
+      - Added:  comment to case T_INDEXED_SIMULTANEOUS_ASC:, case T_BEEP:, case T_SKILL:
+      - Added:  comments to the "if (token == T_SKILL) {}" section
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 void dealWithExceptions() {
 #ifdef GYRO_PIN
   if (gyroBalanceQ && exceptions) {  // the gyro reaction switch can be toggled on/off by the 'g' token
     switch (exceptions) {
+        // -ee- Robot dropped.
       case -1:
         {
           PTL("EXCEPTION 1");
@@ -14,6 +50,7 @@ void dealWithExceptions() {
           newCmdIdx = -1;
           break;
         }
+        // -ee- Robot flipped over.
       case -2:
         {
           PTL("EXCEPTION 2");
@@ -27,6 +64,7 @@ void dealWithExceptions() {
           // tQueue->addTaskToFront('k', "rc");
           break;
         }
+        // -ee- Robot manually pushed or rotated.
       case -3:
         {
           PTL("EXCEPTION 3");
@@ -61,6 +99,7 @@ void dealWithExceptions() {
           }
           break;
         }
+        // -ee- Robot manually pushed or rotated.
       case -4:
         {
           PTL("EXCEPTION 4");
@@ -99,7 +138,7 @@ void dealWithExceptions() {
     }
 
     if (exceptions != -4)
-      print6Axis();
+      print6Axis ();
     read_IMU();  // flush the IMU to avoid static readings and infinite loop
 
     if (tQueue->lastTask == NULL) {
@@ -167,6 +206,9 @@ bool lowBattery() {
 }
 #endif
 
+// -ee- Forward Declaration:  The following function is defined in este.h and used here in reaction() [reaction.h]. 
+bool tokenExtenderQ(char _token, char* _newCmd, bool verboseQ, String tokenHelp, bool& _tokenQ);   // -ee- 
+
 void reaction() {
   if (newCmdIdx) {
     // PTLF("-----");
@@ -206,19 +248,42 @@ void reaction() {
 
     switch (token) {
       case T_QUERY:
+        // -ee- Currently, this case must return only MODEL and SoftwareVersion, since the Petoi Desktop App looks for that info and nothing else.
         {
+          char label[30];
           printToAllPorts(MODEL);
           printToAllPorts(SoftwareVersion);
           break;
         }
       case T_NAME:
+        // -ee- Wrap the original code in a lambda expression (would use a local function but C++ does not support those).  Call that lambda conditionally.
         {
+          #pragma region -ee- BEGIN:  <merge> Wrapping original code in a lambda.  Must be done before it is used.
+          auto local_CaseTName_Lambda = []
+          {
           if (cmdLen > 16)
             printToAllPorts("ERROR! The name should be within 16 characters!");
           else if (cmdLen)
             customBleID(newCmd, cmdLen);  // customize the Bluetooth device's broadcast name. e.g. nMyDog will name the device as "MyDog"
                                           // it takes effect the next time the board boosup. it won't interrupt the current connecton.
           printToAllPorts(readLongByBytes(EEPROM_BLE_NAME));
+          };
+          #pragma endregion   END:    <merge> Wrapping original code in a lambda.  Must be done before it is used.
+
+          #pragma region -ee- BEGIN:  <merge> Adding the ability to abort original code, now wrapped in a lambda.
+          PTL("The name token " + String(T_NAME) + " was sent.\nOk to change the name of the board? (Y/n): ");
+          char choice = getUserInputChar();
+          PTL(choice);
+          if (choice == 'Y' || choice == 'y') 
+          {
+            local_CaseTName_Lambda();
+          }
+          else
+          {
+            printToAllPorts("Ignoring that token");
+          }
+          #pragma endregion   END:  <merge> Adding the ability to abort original code, now wrapped in a lambda.
+
           break;
         }
       case T_GYRO_FINENESS:
@@ -227,6 +292,7 @@ void reaction() {
       case T_VERBOSELY_PRINT_GYRO:
       case T_RANDOM_MIND:
       case T_SLOPE:
+      // -ee- Modifications to T_GYRO_BALANCE, T_PRINT_GYRO, T_VERBOSELY_PRINT_GYRO behaviors are here
         {
           if (token == T_RANDOM_MIND) {
             autoSwitch = !autoSwitch;
@@ -237,22 +303,120 @@ void reaction() {
             fineAdjust = !fineAdjust;
             // imuSkip = fineAdjust ? IMU_SKIP : IMU_SKIP_MORE;
             runDelay = fineAdjust ? delayMid : delayShort;
+// -ee- The following read-back is G or g, same for T_GYRO_FINENESS as for T_GYRO_BALANCE.  Confusing!
             token = fineAdjust ? 'G' : 'g';  // G for activated gyro
           } else if (token == T_GYRO_BALANCE) {
+/* -ee- Comment out original code.
             gyroBalanceQ = !gyroBalanceQ;
             token = gyroBalanceQ ? 'G' : 'g';  // G for activated gyro
+*/
+            #pragma region -ee- BEGIN:  <merge> With T_GYRO_BALANCE, replace using tokenExtenderQ()
+            tokenExtenderQ
+            (
+              token, newCmd, true,
+              "Token T_GYRO_BALANCE = '" + String(T_GYRO_BALANCE) + "'.  It turns on or off the \"gyro balance\" ability to balance the robot using IMU data.\n"
+              "     Note that the \"read IMU data\" ability (token T_IMU_READ_DATA = '@') must be turned on for this token to be used.\n",
+              gyroBalanceQ
+            );
+            token = gyroBalanceQ ? 'G' : 'g';  // G for activated gyro
+            #pragma endregion   END:  <merge> With T_GYRO_BALANCE, replace using tokenExtenderQ()
+
           } else if (token == T_PRINT_GYRO) {
+/* -ee- Comment out original code.
             print6Axis();
-          } else if (token == T_VERBOSELY_PRINT_GYRO) {
+*/
+            #pragma region -ee- BEGIN:  <merge> With T_PRINT_GYRO, replace using tokenExtenderQ()
+            tokenExtenderQ
+            (
+              token, newCmd, true,
+              "Token T_PRINT_GYRO = '" + String(T_PRINT_GYRO) + "'.  It enables various modes for the \"print gyro\" ability to not only read-back the gyro IMU data,\n"
+              "but to initiate gyro calibration and, optionally, initiate the verbose print gyro ability.\n"
+              "     Note that the \"read IMU data\" ability (token T_IMU_READ_DATA = '@') must be turned on for this token to be used.\n",
+              dummyTokenQ
+            );
+            #pragma endregion   END:  <merge> With T_PRINT_GYRO, replace using tokenExtenderQ()
+          }
+
+          else if (token == T_VERBOSELY_PRINT_GYRO) {
+/* -ee- Comment out original code.
             printGyro = !printGyro;
             token = printGyro ? 'V' : 'v';  // V for verbosely print gyro data
-          } else if (token == T_SLOPE) {
+*/
+            #pragma region -ee- BEGIN:  <merge> With T_VERBOSELY_PRINT_GYRO, replace using tokenExtenderQ()
+            tokenExtenderQ
+            (
+              token, newCmd, true,
+              "Token T_VERBOSELY_PRINT_GYRO = '" + String(T_VERBOSELY_PRINT_GYRO) + "'.  It turns on or off the \"verbosely print gyro\" ability to continuously read-back the gyro IMU data.\n"
+              "     Note that the \"read IMU data\" ability (token T_IMU_READ_DATA = '@') must be turned on for this token to be used.\n",
+              printGyro
+            );
+            print6AxisCounter = print6AxisCounterStart;    // -ee- reset counter with each toggle.
+            token = printGyro ? 'V' : 'v';  // V for verbosely print gyro data
+            #pragma endregion   END:  <merge> With T_VERBOSELY_PRINT_GYRO, replace using tokenExtenderQ()
+          }
+
+          else if (token == T_SLOPE) {
             slope = -slope;
             token = slope > 0 ? 'R' : 'r';  // G for activated gyro
           }
 #endif
           break;
         }
+
+      // -ee- Added new tokens here
+      #pragma region -ee- BEGIN:  <merge> Added new tokens.
+
+      case T_DISPLAY_MORE_INFO:   // -ee- Added.
+        {
+          /*  -ee- 
+              Display more info token.
+              Would prefer to put these with the '?' token but the Petoi Desktop App currently will not allow additional info display.
+          */
+          tokenExtenderQ
+          (
+            token, newCmd, true,
+            "Token T_DISPLAY_MORE_INFO = '" + String (T_DISPLAY_MORE_INFO) + "'.  It provides additional information beyond the token T_QUERY = '" + String (T_QUERY) + "'",
+            dummyTokenQ
+          );
+          break;
+        }
+
+      case T_IMU_READ_DATA:       // -ee- Added.
+        {
+          tokenExtenderQ
+          (
+            token, newCmd, true,
+            "Token T_IMU_READ_DATA = '" + String (T_IMU_READ_DATA) + "'.  It turns on or off the \"read IMU data\" ability.\n"
+            "     Note that this ability must be turned on for the following IMU dependent abilities to work.\n" + 
+            "       Token T_GYRO_BALANCE = '" + String (T_GYRO_BALANCE) + "'\n" +
+            "       Token T_VERBOSELY_PRINT_GYRO = '" + String (T_VERBOSELY_PRINT_GYRO) + "'\n",
+            imuDataReadQ
+          );
+          break;
+        }
+
+      case T_SUPER_TOKEN:         // -ee- Added.
+        {
+          /*  -ee-
+              Currently, this Token is a backtick, aka a left single quotation mark, aka a grave accent.
+
+              This Token is used to directly modify a limited set of global variables at runtime.
+                Note:  Currently, only integer global variables can be thus modified.
+              What follows the Token is a string consisting of a Name / Value pair.
+              The Name must be set to the variable name you want to modify.
+              The Value must be set to the new value you want the variable name to have.
+              The Token, Name and Value must be separated by a single space.
+          */
+          tokenExtenderQ
+          (
+            token, newCmd, true,
+            "Token " + String (T_SUPER_TOKEN) + " (the \"backtick\" character) allows you to modify the values of selected runtime variables.\n",
+            dummyTokenQ
+          );
+          break;
+        }
+      #pragma endregion   END:  <merge> Added new tokens.
+      
       case T_PAUSE:
         {
           tStep = !tStep;             // tStep can be -1
@@ -326,10 +490,19 @@ void reaction() {
           setServoP(P_HARD);
           break;
         }
+
+
+
       case T_SAVE:
         {
-          PTLF("save offset");
-          saveCalib(servoCalib);
+/* -ee- Comment out original code.
+        PTLF("save offset");
+        saveCalib(servoCalib);
+*/
+        #pragma region -ee- BEGIN:  <merge> Give message that T_SAVE is disabled.
+        printToAllPorts("save offset (T_SAVE) is disabled");  // -ee- Added.
+        #pragma endregion   END:  <merge> Give message that T_SAVE is disabled.
+
 #ifdef VOICE
           if (newCmdIdx == 2)
             Serial2.println("XAc");
@@ -348,7 +521,19 @@ void reaction() {
         }
       case T_RESET:
         {
+        #pragma region -ee- BEGIN:  <merge> Added the ability to abort.
+        PTL("The reset token " + String(T_RESET) + " was sent.\nOk to reset the board? (Y/n): ");
+        char choice = getUserInputChar();
+        PTL(choice);
+        if (choice == 'Y' || choice == 'y') 
+          {
           resetAsNewBoard('R');
+          }
+        else
+          {
+            printToAllPorts("Ignoring that token");
+          }
+        #pragma endregion   END:  <merge> Added the ability to abort.
           break;
         }
       case T_CALIBRATE:                 // calibration
@@ -367,6 +552,7 @@ void reaction() {
 #ifdef T_TUNER
       case T_TUNER:
 #endif
+// -ee- Added comments to the this code block.
         {
           if (token == T_INDEXED_SIMULTANEOUS_ASC && cmdLen == 0)
             manualHeadQ = false;
@@ -378,16 +564,16 @@ void reaction() {
             }
             targetFrame[DOF] = '~';
             char *pch;
-            pch = strtok(newCmd, " ,");
+            pch = strtok(newCmd, " ,");   // -ee- tokenize newCmd to get first item via delimiters " " or ",".  Note " " is standard delimiter.
             nonHeadJointQ = false;
             do {  // it supports combining multiple commands at one time
               // for example: "m8 40 m8 -35 m 0 50" can be written as "m8 40 8 -35 0 50"
               // the combined commands should be less than four. string len <=30 to be exact.
-              int target[2] = {};
-              int inLen = 0;
+              int target[2] = {};   // -ee- Used to store items after the token.
+              int inLen = 0;    // -ee- Used to count the number of items after the token.
               for (byte b = 0; b < 2 && pch != NULL; b++) {
-                target[b] = atoi(pch);  //@@@ cast
-                pch = strtok(NULL, " ,\t");
+                target[b] = atoi(pch);  //@@@ cast    // -ee- From ascii to int.
+                pch = strtok(NULL, " ,\t");   // -ee- tokenize newCmd to get second (and last) item, if any, via delimiters " " or "," or tab.
                 inLen++;
               }
               if ((token == T_INDEXED_SEQUENTIAL_ASC || token == T_INDEXED_SIMULTANEOUS_ASC) && target[0] >= 0 && target[0] < DOF) {
@@ -467,13 +653,14 @@ void reaction() {
                 yprTilt[target[0]] = target[1];
               }
 #endif
+                                                                  // -ee- T_BEEP code is here.
               else if (token == T_MEOW) {
                 meow(random() % 2 + 1, (random() % 4 + 2) * 10);
               } else if (token == T_BEEP) {
                 if (inLen == 0) {  // toggle on/off the bootup melody
-                  soundState = !i2c_eeprom_read_byte(EEPROM_BOOTUP_SOUND_STATE);
-                  printToAllPorts(soundState ? "Unmute" : "Muted");
-                  i2c_eeprom_write_byte(EEPROM_BOOTUP_SOUND_STATE, soundState);
+                  soundState = !i2c_eeprom_read_byte(EEPROM_BOOTUP_SOUND_STATE);  // -ee- gets beep "soundState" and toggles it (on or off).
+                  printToAllPorts(soundState ? "Unmute" : "Muted");               // -ee- soundState true (1) is unmuted (on).
+                  i2c_eeprom_write_byte(EEPROM_BOOTUP_SOUND_STATE, soundState);   // -ee- write the toggled soundState back to EEPROM for persistence.
                   if (soundState && !buzzerVolume) {  // if i want to unmute but the volume was set to 0
                     buzzerVolume = 5;                 // set the volume to 5/10
                     i2c_eeprom_write_byte(EEPROM_BUZZER_VOLUME, buzzerVolume);
@@ -675,11 +862,13 @@ void reaction() {
           token = T_SKILL;
           break;
         }
+// 
       case T_SKILL:
+// -ee- Added comments to the this code block.
         {
           if (!strcmp("x", newCmd)        // x for random skill
               || strcmp(lastCmd, newCmd)  // won't transform for the same gait.
-              || skill->period <= 1) {    // skill->period can be NULL!
+              || skill->period <= 1) {    // skill->period can be NULL!         // -ee- This is the only place where period could be = 1. .i.e for Posture.
             // it's better to compare skill->skillName and newCmd.
             // but need more logics for non skill cmd in between
             loadBySkillName(newCmd);  // newCmd will be overwritten as dutyAngles then recovered from skill->skillName
@@ -717,15 +906,16 @@ void reaction() {
     resetCmd();
   }
 
+// -ee- Added comments to the this code block.
   if (token == T_SKILL) {
     skill->perform();
-    if (skill->period > 1)
+    if (skill->period > 1)                                 // -ee- For Gait.
       delay(delayShort + max(0, int(runDelay
 #ifdef GYRO_PIN
                                     - (max(abs(ypr[1]), abs(ypr[2])) / 10)  // accelerate gait when tilted
 #endif
                                     )));
-    if (skill->period < 0) {
+    if (skill->period < 0) {                              // -ee- For Behavior.
       if (!strcmp(skill->skillName, "fd")) {  // need to optimize logic to combine "rest" and "fold"
         shutServos();
         gyroBalanceQ = false;
@@ -746,6 +936,7 @@ void reaction() {
         currentAdjust[i] = 0;
       printToAllPorts(token);  // behavior can confirm completion by sending the token back
     }
+                                                          // -ee- For Posture?  Not, that should be handled above for period <=1
     // if (exceptions && lastCmd[strlen(lastCmd) - 1] < 'L' && skillList->lookUp(lastCmd) > 0) {  //can be simplified here.
     //   if (lastCmd[0] != '\0')
     //     loadBySkillName(lastCmd);
@@ -765,3 +956,5 @@ void reaction() {
     }
   }
 }
+
+

@@ -1,3 +1,26 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - In #ifdef ADVANCED_PID
+      - Added:  /* -ee- Comment out original code.
+          Then added:  #pragma region -ee- BEGIN:  #define PID_DL
+          And renamed use of macro PID to new macro PID_DL
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 /*
   This program uses a simple double light sensor to make the robot follow the light source
   The PID mode will scan the environmental lighting conditions (look around) during booting up. 
@@ -13,7 +36,12 @@
 #define ADVANCED_PID  //use some compensation to make the robot adapt to different lighting conditions
 
 #ifdef ADVANCED_PID
+/* -ee- Comment out original code.
 #define PID
+*/
+#pragma region -ee- BEGIN:  #define PID_DL
+#define PID_DL  // -ee- This definition (only used in this file) conflicts with the MPU6050::PID() method found in MPU6050.cpp.  Renaming from "PID" to "PID_DL" prevent this conflict.
+#pragma region   END:
 #endif
 
 #define BOOTING_SCAN_RANGE 55.0  // the scan range when the robot evaluate the environmental lighting condition
@@ -25,7 +53,7 @@
 
 
 
-#ifdef PID
+#ifdef PID_DL
 double mean_array_d(double array[], int start, int end, double scar) {
   double mean = 0;
   int num = end - start;

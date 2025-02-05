@@ -1,3 +1,47 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - Added:  
+      - #pragma region -ee- BEGIN:  Defines
+      - #pragma region -ee- BEGIN:  -ee- Tokens And Supporting Variables
+            #define T_IMU_READ_DATA '@'      // -ee- Added
+            #define T_DISPLAY_MORE_INFO '+'  // -ee- Added
+            #define T_SUPER_TOKEN '`'        // -ee- Added
+            bool dummyTokenQ = true;         // -ee- We will use dummyTokenQ when the _tokenQ parameter is not used in tokenExtenderQ().
+      - #pragma region -ee- BEGIN:  Global Variable Definitions
+      -  #pragma region -ee- BEGIN:  Supporting variables for print6Axis_ee()
+            int printGyroSkipNum = 101;                      // -ee- Number of read_IMU() cycles to skip before calling print6Axis_ee().  Current value gives about 1 sec between calls.
+            #define print6AxisCounterStart 0                 // -ee- Added
+            int print6AxisCounter = print6AxisCounterStart;  // -ee- Helper counter of call read_IMU() cycles.
+            int numLoops = 15;                               // -ee- Number of loops to use in imSetup() when mpu.CalibrateAccel() and mpu.CalibrateGyro() are called.  Default is 20.
+  - Edited:  #define ESTE_DATE "250202a"     // -ee-  version tracking for my work.
+  - Added:  /*  -ee- List of all possible token characters and list of token characters officially (not -ee-) in use
+  - Added:  /*  -ee- The variable "gyroBalanceQ" is confusingly named because it has Balance in the name but it does more than affect robot balancing.
+  - Added:  bool imuDataReadQ = true;  // -ee-  Added here and implemented in io.h readEnvironment.h
+  - In moduleList[] initialization
+      - Added:  comment:  // -ee- The tokens are shown in the following comments.
+  - In moduleActivatedQ[] initialization
+      - Added:  comment:  // -ee- Mapping tokens to modules:T  L  D  I  U  G  M  A      //1 = enabled, 0 = disabled.  Currently, only one module is enabled at a time.
+  - In #ifdef BITTLE, int angleLimit[][2]
+      - Added:  various -ee- notes
+  - In initRobot()
+      - Added:  #pragma region -ee- BEGIN:  -ee- Customizations
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 /* BiBoard
     PWM:
                         |--------------------------------
@@ -62,6 +106,11 @@
    BiBoard  (12)  skip 0~4  skip 0~4    12
    BiBoard2 (16)  skip 0~8  skip 0~8  skip0~4
 */
+
+
+
+#pragma region -ee- BEGIN:  <doc> Defines
+
 #define SERIAL_TIMEOUT 10  // 5 may cut off the message
 #define SERIAL_TIMEOUT_LONG 150
 #ifdef BiBoard_V0_1
@@ -72,6 +121,7 @@
 #define BOARD "B"
 #endif
 #define DATE "240422"  // YYMMDD
+#define ESTE_DATE "250202a"     // -ee-  version tracking for my work.
 String SoftwareVersion = "";
 
 #define BIRTHMARK 'x'  // Send '!' token to reset the birthmark in the EEPROM so that the robot will know to restart and reset
@@ -193,6 +243,28 @@ ServoModel_t servoModelList[] = {
 bool newBoard = false;
 
 #include <math.h>
+
+/*  -ee- List of all possible token characters and list of token characters officially (not -ee-) in use
+
+    There are 94 standard (using only the Shift key as modifier) visibly typeable ASCII characters on the typical PC keyboard.
+      10 digits: 0123456789
+      26 lower case letters: abcdefghijklmnopqrstuvwxyz
+      26 upper case letters: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      32 special characters: `~!@#$%^&*()-_=+[]\{}|;':",./<>?
+
+    As of the above "File Changes" date:
+
+      There are 40 characters are officially used as tokens:
+      (note that currently, tokens ';' and ':' are NOT defined in OpenCat.h but are hard coded in the switch within reaction() [reaction.h] )
+        abBcCdfFgGiIjkKlLmMnopqRstTuvVwWxz!?.,;:
+
+      There are 3 characters used by -ee-
+        @+`
+
+      There are 51 characters that remain available for use as tokens:
+       0123456789ADeEhHJNOPQrSUXyYZ~#$%^&*()-_=[]\{}|'"/<>
+*/
+
 // token list
 #define T_ABORT 'a'      //abort the calibration values
 #define T_BEEP 'b'       //b note1 duration1 note2 duration2 ... e.g. b12 8 14 8 16 8 17 8 19 4 \
@@ -238,6 +310,7 @@ bool newBoard = false;
 
 #define T_READ 'R'        // read pin     R
 #define T_WRITE 'W'       // write pin                      W
+// -ee- next two items are not tokens
 #define TYPE_ANALOG 'a'   //            Ra(analog read)   Wa(analog write)
 #define TYPE_DIGITAL 'd'  //            Rd(digital read)  Wd(digital write)
 
@@ -255,6 +328,17 @@ bool newBoard = false;
 #define EXTENSION_GESTURE 'G'
 #define EXTENSION_CAMERA_MU3 'M'
 #define EXTENSION_VOICE 'A'
+
+#pragma endregion   END:  <doc> Defines
+
+#pragma region -ee- BEGIN:  <merge> -ee- Tokens And Supporting Variables
+#define T_IMU_READ_DATA '@'      // -ee- Added
+#define T_DISPLAY_MORE_INFO '+'  // -ee- Added
+#define T_SUPER_TOKEN '`'        // -ee- Added
+bool dummyTokenQ = true;         // -ee- We will use dummyTokenQ when the _tokenQ parameter is not used in tokenExtenderQ().
+#pragma endregion   END:  <merge> -ee- Tokens And Supporting Variables
+
+#pragma region -ee- BEGIN:  <doc> Global Variable Definitions
 
 // bool updated[10];
 float degPerRad = 180 / M_PI;
@@ -289,7 +373,16 @@ long lastSerialTime = 0;
 
 bool interruptedDuringBehavior = false;
 bool fineAdjust = true;
-bool gyroBalanceQ = true;
+
+/*  -ee- The variable "gyroBalanceQ" is confusingly named because it has Balance in the name but it does more than affect robot balancing.
+    Setting it to false causes [in io.h, readEnvironment() ] the IMU data not to be read.
+    With gyroBalanceQ = false, you also cannot get any IMU data for navigation!
+    IMO, this should just turn on/off the robot balancing but should not stop getting IMU data for other purposes.
+    There should be a separate bool for enabling/disabling reading IMU data.
+*/
+bool gyroBalanceQ = true;  
+bool imuDataReadQ = true;  // -ee-  Added here and implemented in io.h readEnvironment.h
+
 bool printGyro = false;
 bool autoSwitch = false;
 bool walkingQ = false;
@@ -297,6 +390,7 @@ bool manualHeadQ = false;
 bool nonHeadJointQ = false;
 bool hardServoQ = true;
 bool manualEyeColorQ = false;
+
 // bool keepDirectionQ = true;
 #define HEAD_GROUP_LEN 4  // used for controlling head pan, tilt, tail, and other joints independent from walking
 int targetHead[HEAD_GROUP_LEN];
@@ -307,16 +401,17 @@ byte transformSpeed = 2;
 float protectiveShift;  // reduce the wearing of the potentiometer
 
 int8_t moduleList[] = {
-  EXTENSION_DOUBLE_TOUCH,
-  EXTENSION_DOUBLE_LIGHT,
-  EXTENSION_DOUBLE_IR_DISTANCE,
-  EXTENSION_PIR,
-  EXTENSION_ULTRASONIC,
-  EXTENSION_GESTURE,
-  EXTENSION_CAMERA_MU3,
-  EXTENSION_VOICE
+                                 // -ee- The tokens are shown in the following comments.
+  EXTENSION_DOUBLE_LIGHT,        // L
+  EXTENSION_DOUBLE_IR_DISTANCE,  // D
+  EXTENSION_PIR,                 // I
+  EXTENSION_ULTRASONIC,          // U
+  EXTENSION_GESTURE,             // G
+  EXTENSION_CAMERA_MU3,          // M
+  EXTENSION_VOICE                // A
 };
-bool moduleActivatedQ[] = { 0, 0, 0, 0, 0, 0, 0, 1 };
+// Mapping tokens to modules:T  L  D  I  U  G  M  A      // -ee- 1 = enabled, 0 = disabled.  Currently, only one module is enabled at a time.
+bool moduleActivatedQ[] = { 0, 0, 0, 0, 0, 0, 0, 0 };   //default is { 0, 0, 0, 0, 0, 0, 0, 1 }
 bool initialBoot = true;
 bool safeRest = true;
 bool soundState;
@@ -330,6 +425,24 @@ int delayShort = 3;
 int delayStep = 1;
 int delayPrevious;
 int runDelay = delayMid;
+
+  #pragma region -ee- BEGIN:  <merge> Supporting variables for print6Axis_ee()
+
+/*  -ee- 
+*   Measured the # of millisec between print6Axis_ee() calls for different printGyroSkipNum values
+*     @ printGyroSkipNum = 500  >>>  4990.0 millisec between calls.
+*     @ printGyroSkipNum = 100  >>>  998.0 millisec between calls.
+*     @ printGyroSkipNum = 50   >>>  499.0 millisec between calls.
+*     @ printGyroSkipNum = 25   >>>  249.5 millisec between calls.
+*/
+int printGyroSkipNum = 101;                      // -ee- Number of read_IMU() cycles to skip before calling print6Axis_ee().  Current value gives about 1 sec between calls.
+#define print6AxisCounterStart 0                 // -ee- Added
+int print6AxisCounter = print6AxisCounterStart;  // -ee- Helper counter of call read_IMU() cycles.
+int numLoops = 15;                               // -ee- Number of loops to use in imSetup() when mpu.CalibrateAccel() and mpu.CalibrateGyro() are called.  Default is 20.
+  #pragma endregion   END:  <merge> Supporting variables for print6Axis_ee()
+
+#pragma endregion   END:  <doc> Global Variable Definitions
+
 
 #ifdef NYBBLE
 int8_t middleShift[] = { 0, 15, 0, 0,
@@ -380,7 +493,7 @@ int8_t rotationDirection[] = { 1, -1, 1, 1,
                                -1, 1, 1, -1 };
 #ifdef BITTLE
 int angleLimit[][2] = {
-  { -120, 120 },
+  { -120, 120 },     // -ee- Joint Index = 0
   { -85, 85 },
   { -120, 120 },
   { -120, 120 },
@@ -388,14 +501,16 @@ int angleLimit[][2] = {
   { -90, 60 },
   { -90, 90 },
   { -90, 90 },
-  { -200, 80 },
-  { -200, 80 },
-  { -80, 200 },
-  { -80, 200 },
-  { -80, 200 },
-  { -80, 200 },
-  { -70, 200 },
-  { -80, 200 },
+
+  { -200, 80 },     // -ee- Joint Index = 8   LeftFront   Hip
+  { -200, 80 },     // -ee- Joint Index = 9   RightFront  Hip
+  { -80, 200 },     // -ee- Joint Index = 10  RightBack   Hip
+  { -80, 200 },     // -ee- Joint Index = 11  LeftBack    Hip
+
+  { -80, 200 },     // -ee- Joint Index = 12  LeftFront   Knee
+  { -80, 200 },     // -ee- Joint Index = 13  RightFront  Knee
+  { -70, 200 },     // -ee- Joint Index = 14  RightBack   Knee
+  { -80, 200 },     // -ee- Joint Index = 15  LeftBack    Knee
 };
 #else
 int angleLimit[][2] = {
@@ -568,4 +683,28 @@ void initRobot() {
   PTL("Ready!");
   idleTimer = millis();
   beep(24, 50);
+
+  #pragma region -ee- BEGIN:  -ee- Customizations
+
+  PTL("idleTimer = " + String(idleTimer) );
+//  tQueue->addTask('k', "up");  // -ee- Start robot in "stand-up" posture.
+  imuCalibrate_ee();  // -ee- Added to force IMU calibration.
+  delay(2000);
+  Serial2.println("XAd");   // -ee- Turn off voice module recognition.  Doesn't work though...
+
+  /* -ee- Here you can add any tasks to be run during the setup() */
+
+  // These tasks should always be performed.
+  tQueue->addTask('G', "0");   // Start with the IMU disabled
+  tQueue->addTask('X', "-1");  // -ee- disable all modules.  Correctly changes the Extension array but the voice module still "listens" and tries to respond.
+//  tQueue->addTask('XAd', "");  // Turn off voice module recognition  - Still the voice module still "listens" and tries to respond.
+//  tQueue->addTask('X', "Ad");  // Turn off voice module recognition  - Still the voice module still "listens" and tries to respond.
+
+  // These tasks should be enabled only when needed.
+//  tQueue->addTask('n', "BittleA2");  // -ee- enable to automatically set the Bluetooth name.
+
+//  tQueue->addTask('X', "Ad~");  // Need to use the '~' terminator.   but this does not work.  - Still the voice module still "listens" and tries to respond.
+//  tQueue->addTask('k', "up");  // -ee- Start robot in "stand-up" posture.
+
+  #pragma endregion   END:  -ee- Customizations
 }

@@ -30,7 +30,7 @@ void testMPU() {
   for (int t = 0; t < count; t++) {
     delay(5);
     read_IMU();
-    print6Axis();
+    print6Axis ();
     for (int a = 0; a < 2; a++)
       history[a][t] = ypr[a + 1];
   }

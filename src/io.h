@@ -1,3 +1,29 @@
+#pragma region -ee- BEGIN:  <doc> File Changes
+
+/*             Documentation of -ee- Changes In THIS File:  Updated 2025-02-03a
+
+      CHANGES:
+
+  - In readEnvironment()
+      - Added:  /* -ee- Comment out original code.
+          Then added:  #pragma region -ee- BEGIN:  <merge> Replace use of gyroBalanceQ with imuDataReadQ.
+  -  In template<typename T> void printToAllPorts(T text)
+      - Added:  #pragma region -ee- BEGIN:  <merge> Added #ifdef PRINT_TO_ALL_PORTS___TESTING for testing.
+      - Added:  /* -ee- Comment out original code.
+          Then added:  #pragma region -ee- BEGIN:  <merge> Changed to use correct method in the guard condition.
+
+      ENABLED / DISABLED:
+
+  Enabled
+    - 
+
+  Disabled
+    - 
+
+*/
+#pragma endregion   END:  <doc> File Changes
+
+
 #include "soc/gpio_sig_map.h"
 
 void read_sound() {
@@ -23,8 +49,14 @@ void read_touch() {
 #endif
 void readEnvironment() {
 #ifdef GYRO_PIN
+/* -ee- Comment out original code.
   if (gyroBalanceQ && !(frame % imuSkip))
     imuUpdated = read_IMU();
+*/
+  #pragma region -ee- BEGIN:  <merge> Replace use of gyroBalanceQ with imuDataReadQ.
+  if (imuDataReadQ && !(frame % imuSkip))  // -ee- Here, I replaced gyroBalanceQ with imuDataReadQ.
+    imuUpdated = read_IMU();  // -ee- This is the key line that reads IMU data.
+  #pragma endregion   END:  <merge> Replace use of gyroBalanceQ with imuDataReadQ.
 #endif
   read_sound();
   read_GPS();
@@ -108,14 +140,37 @@ void blueSspSetup() {
 
 #endif
 
+//#define PRINT_TO_ALL_PORTS___TESTING
 template<typename T> void printToAllPorts(T text) {
+
 #ifdef BT_BLE
   if (deviceConnected)
     bleWrite(String(text));
 #endif
+
+#pragma region -ee- BEGIN:  <merge> Added #ifdef PRINT_TO_ALL_PORTS___TESTING for testing.
+
+#ifdef PRINT_TO_ALL_PORTS___TESTING      // -ee- for testing.
+  PTL("BTconnected = "                  + String(BTconnected                  ) );    //only true upon pairing attempt and then success
+  PTL("SerialBT.isReady() = "           + String(SerialBT.isReady()           ) );    //only true when the SerialBT object is ready (the COM port need not exist!)
+  PTL("SerialBT.available() = "         + String(SerialBT.available()         ) );    //always seems to be false (perhaps only used for the incoming port FROM BiBoard TO laptop?
+//  PTL("SerialBT.availableForWrite() = " + String(SerialBT.availableForWrite() ) );    //Causes a reboot if issues on startup
+//  PTL("SerialBT.connected() = "         + String(SerialBT.connected()         ) );    //Causes a reboot if issues on startup
+//  PTL("SerialBT.isClosed() = "          + String(SerialBT.isClosed()          ) );    //Causes a reboot if issues on startup
+#endif // PRINT_TO_ALL_PORTS___TESTING
+#pragma endregion   END:  <merge> Added #ifdef PRINT_TO_ALL_PORTS___TESTING for testing.
+
 #ifdef BT_SSP
+/* -ee- Comment out original code.
   if (BTconnected)
+*/
+
+#pragma region -ee- BEGIN:  <merge> Changed to use correct method in the guard condition.
+  if ( SerialBT.isReady() )
+#pragma endregion   END:  <merge> Changed to use correct method in the guard condition.
+
     SerialBT.println(text);
 #endif
+
   PTL(text);
 }
