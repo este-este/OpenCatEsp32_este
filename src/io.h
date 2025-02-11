@@ -9,11 +9,11 @@
 // and also demonstrate that SerialBT has the same functionalities as a normal Serial
 
 #ifdef BT_SSP
-#include "BluetoothSerial.h"
+  #include "BluetoothSerial.h"
 
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+  #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
+  #endif
 
 BluetoothSerial SerialBT;
 boolean confirmRequestPending = true;
@@ -35,20 +35,20 @@ void BTAuthCompleteCallback(boolean success) {
   }
 }
 
-void blueSspSetup() {
-  SerialBT.enableSSP();
-  SerialBT.onConfirmRequest(BTConfirmRequestCallback);
-  SerialBT.onAuthComplete(BTAuthCompleteCallback);
-#ifdef I2C_EEPROM_ADDRESS
-  PTHL("SSP:\t", strcat(readLongByBytes(EEPROM_BLE_NAME), "_SSP"));
-  SerialBT.begin(strcat(readLongByBytes(EEPROM_BLE_NAME), "_SSP"));  // Bluetooth device name
-#else
-  String blueID = "" + config.getString("ID", "P") + "_SSP";
-  PTHL("SSP:\t", blueID);
-  SerialBT.begin(blueID.c_str());  // Bluetooth device name
-#endif
-  Serial.println("The SSP device is started, now you can pair it with Bluetooth!");
-}
+  void blueSspSetup() {
+    SerialBT.enableSSP();
+    SerialBT.onConfirmRequest(BTConfirmRequestCallback);
+    SerialBT.onAuthComplete(BTAuthCompleteCallback);
+  #ifdef I2C_EEPROM_ADDRESS
+    PTHL("SSP:\t", strcat(readLongByBytes(EEPROM_BLE_NAME), "_SSP"));
+    SerialBT.begin(strcat(readLongByBytes(EEPROM_BLE_NAME), "_SSP"));  // Bluetooth device name
+  #else
+    String blueID = "" + config.getString("ID", "P") + "_SSP";
+    PTHL("SSP:\t", blueID);
+    SerialBT.begin(blueID.c_str());  // Bluetooth device name
+  #endif
+    Serial.println("The SSP device is started, now you can pair it with Bluetooth!");
+  }
 
 // void readBlueSSP() {
 //   if (confirmRequestPending)

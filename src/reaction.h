@@ -37,14 +37,14 @@ void dealWithExceptions() {
             if (tQueue->cleared() && skill->period == 1) {
               PTL("EXCEPTION: Knocked");
               tQueue->addTask('k', "knock");
-#if defined NYBBLE && defined ULTRASONIC
+  #if defined NYBBLE && defined ULTRASONIC
               if (!moduleActivatedQ[0]) {  // serial2)
                 int8_t clrRed[] = { 125, 0, 0, 0, 0, 126 };
                 int8_t clrBlue[] = { 0, 0, 125, 0, 0, 126 };
                 tQueue->addTask('C', clrRed, 1);
                 tQueue->addTask('C', clrBlue);
               }
-#endif
+  #endif
               tQueue->addTask('k', "up");
             }
             break;
@@ -160,11 +160,11 @@ bool lowBattery() {
   if (currentTime > uptime) {
     uptime = currentTime;
     float voltage = analogRead(VOLTAGE);
-#ifdef BiBoard_V1_0
+  #ifdef BiBoard_V1_0
     voltage = voltage / 515 + 1.9;
-#else
+  #else
     voltage = voltage / 414;
-#endif
+  #endif
     if (voltage < NO_BATTERY_VOLTAGE2 || (voltage < LOW_VOLTAGE2                                     // powered by 6V, voltage >= NO_BATTERY && voltage < LOW_VOLTAGE2
                                           || voltage > NO_BATTERY_VOLTAGE && voltage < LOW_VOLTAGE)  // powered by 7.4V
                                            && abs(voltage - lastVoltage) < 0.2                       // not caused by power fluctuation during movements
@@ -187,11 +187,11 @@ bool lowBattery() {
         PT(voltage);
         PTL("V");
         PTLF("Long-press the battery's button to turn it on!");
-#ifdef I2C_EEPROM_ADDRESS
+  #ifdef I2C_EEPROM_ADDRESS
         if (i2c_eeprom_read_byte(EEPROM_BOOTUP_SOUND_STATE))
-#else
+  #else
         if (config.getBool("bootSndState", 1))
-#endif
+  #endif
           playMelody(melodyLowBattery, sizeof(melodyLowBattery) / 2);
       }
       batteryWarningCounter = (batteryWarningCounter + 1) % BATTERY_WARNING_FREQ;
@@ -368,11 +368,11 @@ void reaction() {
       case T_POWER:
         {
           float voltage = analogRead(VOLTAGE);
-#ifdef BiBoard_V1_0
+  #ifdef BiBoard_V1_0
           voltage = voltage / 515 + 1.9;
-#else
+  #else
           voltage = voltage / 414;
-#endif
+  #endif
           String message = "Voltage: ";
           printToAllPorts(message + voltage + " V");
           break;
@@ -636,11 +636,11 @@ void reaction() {
                   criticalAngle = calibratePincerByVibration(criticalAngle - 4, criticalAngle + 4, 1);
                   servoCalib[2] = servoCalib[2] + criticalAngle + 16;
                   PTHL("Pincer calibrate angle: ", servoCalib[2]);
-#ifdef I2C_EEPROM_ADDRESS
+  #ifdef I2C_EEPROM_ADDRESS
                   i2c_eeprom_write_byte(EEPROM_CALIB + 2, servoCalib[2]);
-#else
+  #else
                   config.putBytes("calib", servoCalib, DOF);
-#endif
+  #endif
                   calibratedZeroPosition[2] = zeroPosition[2] + float(servoCalib[2]) * rotationDirection[2];
                   loadBySkillName("calib");
                 } else
@@ -666,11 +666,11 @@ void reaction() {
               }
 #ifdef T_SERVO_MICROSECOND
               else if (token == T_SERVO_MICROSECOND) {  // there might be some problems.
-#ifdef ESP_PWM
+  #ifdef ESP_PWM
                 servo[PWM_pin[target[0]]].writeMicroseconds(target[1]);
-#else
+  #else
                 pwm.writeMicroseconds(PWM_pin[target[0]], target[1]);
-#endif
+  #endif
               }
 #endif
 #ifdef T_SERVO_FEEDBACK

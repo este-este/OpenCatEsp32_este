@@ -68,13 +68,13 @@
 #define SERIAL_TIMEOUT 10  // 5 may cut off the message
 #define SERIAL_TIMEOUT_LONG 200
 #ifdef BiBoard_V0_1
-#define BOARD "B01"
+  #define BOARD "B01"
 #elif defined BiBoard_V0_2
-#define BOARD "B02"
+  #define BOARD "B02"
 #elif defined BiBoard_V1_0
-#define BOARD "B10"
+  #define BOARD "B10"
 #else
-#define BOARD "B"
+  #define BOARD "B"
 #endif
 #define DATE "250211"  // YYMMDD
 String SoftwareVersion = "";
@@ -89,142 +89,141 @@ String SoftwareVersion = "";
 
 // Tutorial: https://bittle.petoi.com/11-tutorial-on-creating-new-skills
 #ifdef NYBBLE
-#define MODEL "Nybble Q"
-#define HEAD
-#define TAIL
-#define X_LEG
-#define REGULAR P1S  // G41
-#define KNEE P1S     // G41
-#include "InstinctNybbleESP.h"
+  #define MODEL "Nybble Q"
+  #define HEAD
+  #define TAIL
+  #define X_LEG
+  #define REGULAR P1S  // G41
+  #define KNEE P1S     // G41
+  #include "InstinctNybbleESP.h"
 
 #elif defined BITTLE
-#ifdef ROBOT_ARM
-#define MODEL "Bittle R"
-#else
-#define MODEL "Bittle X"
-#endif
+  #ifdef ROBOT_ARM
+    #define MODEL "Bittle R"
+  #else
+    #define MODEL "Bittle X"
+  #endif
 
-#define HEAD
-#define TAIL  // the robot arm's clip is assigned to the tail joint
-#define LL_LEG
+  #define HEAD
+  #define TAIL  // the robot arm's clip is assigned to the tail joint
+  #define LL_LEG
 
-#ifndef MINI
-#define REGULAR P1S
-#define KNEE P1S
-#else
-#define REGULAR P50
-#define KNEE P50
-#endif
-#ifdef ROBOT_ARM
-#include "InstinctBittleESP_arm.h"
-#else
-#include "InstinctBittleESP.h"
-#endif
+  #ifndef MINI
+    #define REGULAR P1S
+    #define KNEE P1S
+  #else
+    #define REGULAR P50
+    #define KNEE P50
+  #endif
+  #ifdef ROBOT_ARM
+    #include "InstinctBittleESP_arm.h"
+  #else
+    #include "InstinctBittleESP.h"
+  #endif
 
 #elif defined CUB
-#define MODEL "DoF16"
-#ifdef BiBoard2
-#define HEAD
-#define TAIL
-#endif
-#define LL_LEG
-#define REGULAR P1S
-#define KNEE P2K
-#include "InstinctCubESP.h"
-
+  #define MODEL "DoF16"
+  #ifdef BiBoard2
+  #define HEAD
+  #define TAIL
+  #endif
+  #define LL_LEG
+  #define REGULAR P1S
+  #define KNEE P2K
+  #include "InstinctCubESP.h"
 #endif
 
 #if defined BiBoard_V0_1 || defined BiBoard_V0_2
-#define ESP_PWM
-#define PWM_NUM 12
-#define INTERRUPT_PIN 26  // use pin 2 on Arduino Uno & most boards
-#define BUZZER 25
-#define IR_PIN 23
-#ifndef IR_PIN
-#define BT_CLIENT  // toggle Bluetooth client (BLE） for Micro:Bit
-#endif
-#define ANALOG1 34
-#define ANALOG2 35
-#define ANALOG3 36
-#define ANALOG4 39
-#define UART_RX2 16
-#define UART_TX2 17
-#define SERIAL_VOICE Serial2
-#define IMU_MPU6050
+  #define ESP_PWM
+  #define PWM_NUM 12
+  #define INTERRUPT_PIN 26  // use pin 2 on Arduino Uno & most boards
+  #define BUZZER 25
+  #define IR_PIN 23
+  #ifndef IR_PIN
+    #define BT_CLIENT  // toggle Bluetooth client (BLE） for Micro:Bit
+  #endif
+  #define ANALOG1 34
+  #define ANALOG2 35
+  #define ANALOG3 36
+  #define ANALOG4 39
+  #define UART_RX2 16
+  #define UART_TX2 17
+  #define SERIAL_VOICE Serial2
+  #define IMU_MPU6050
 // #define IMU_ICM42670
-#define I2C_EEPROM_ADDRESS 0x54  // Address of i2c eeprom chip
+  #define I2C_EEPROM_ADDRESS 0x54  // Address of i2c eeprom chip 
 
 // L:Left-R:Right-F:Front-B:Back---LF, RF, RB, LB
 const uint8_t PWM_pin[PWM_NUM] = {
-#ifdef BITTLE
+  #ifdef BITTLE
   19, 2, 4, 27,  // head or shoulder roll
-#elif defined NYBBLE
+  #elif defined NYBBLE
   19, 4, 2, 27,  // head or shoulder roll
-#endif
+  #endif
   33, 5, 15, 14,  // shoulder pitch
   32, 18, 13, 12  // knee
 };
 
 #elif defined BiBoard_V1_0
-#define ESP_PWM
-#define PWM_NUM 12
-// #define INTERRUPT_PIN 26  // use pin 2 on Arduino Uno & most boards
-#define BUZZER 2
-#define BT_CLIENT  // toggle Bluetooth client (BLE） for Micro:Bit
-// #define IR_PIN 23
+  #define ESP_PWM
+  #define PWM_NUM 12
+  // #define INTERRUPT_PIN 26  // use pin 2 on Arduino Uno & most boards
+  #define BUZZER 2
+  #define BT_CLIENT  // toggle Bluetooth client (BLE） for Micro:Bit
+  // #define IR_PIN 23
 
-#define LOW_VOLTAGE 7.0  // for 2S 7.4V power
-#define NO_BATTERY_VOLTAGE 6.8
-#define LOW_VOLTAGE2 5.0  // for 6V power
-#define NO_BATTERY_VOLTAGE2 4.8
-#ifdef RevB
-#define VOLTAGE 35  // rev B
-#define ANALOG2 32  // rev B
-#elif defined RevDE
-#define VOLTAGE 37  // rev D
-#define ANALOG2 35  // rev D
-#endif
-#define ANALOG1 34
-#define ANALOG3 36
-#define ANALOG4 39
-#define BACKTOUCH_PIN 38
-#define VOICE_RX 26
-#define VOICE_TX 25
-#define UART_RX2 9
-#define UART_TX2 10
-#define SERIAL_VOICE Serial1
-#define IMU_MPU6050
-#define IMU_ICM42670
-// #define I2C_EEPROM_ADDRESS 0x54  // Address of i2c eeprom chip
+  #define LOW_VOLTAGE 7.0  // for 2S 7.4V power
+  #define NO_BATTERY_VOLTAGE 6.8
+  #define LOW_VOLTAGE2 5.0  // for 6V power
+  #define NO_BATTERY_VOLTAGE2 4.8
+  #ifdef RevB
+    #define VOLTAGE 35  // rev B
+    #define ANALOG2 32  // rev B
+  #elif defined RevDE
+    #define VOLTAGE 37  // rev D
+    #define ANALOG2 35  // rev D
+  #endif
+  #define ANALOG1 34
+  #define ANALOG3 36
+  #define ANALOG4 39
+  #define BACKTOUCH_PIN 38
+  #define VOICE_RX 26
+  #define VOICE_TX 25
+  #define UART_RX2 9
+  #define UART_TX2 10
+  #define SERIAL_VOICE Serial1
+  #define IMU_MPU6050
+  #define IMU_ICM42670
+  // #define I2C_EEPROM_ADDRESS 0x54  // Address of i2c eeprom chip
 
-#define PWM_LED_PIN 27
+  #define PWM_LED_PIN 27
 
 // L:Left-R:Right-F:Front-B:Back---LF, RF, RB, LB
 const uint8_t PWM_pin[PWM_NUM] = {
-#ifdef BITTLE
+  #ifdef BITTLE
   18, 14, 5, 27,  // head or shoulder roll
-#elif defined NYBBLE
+  #elif defined NYBBLE
   18, 5, 14, 27,  // head or shoulder roll
-#endif
+  #endif
   23, 4, 12, 33,  // shoulder pitch
   19, 15, 13, 32  // knee
 };
 
 #elif defined BiBoard2
-#define PWM_NUM 16
-#define INTERRUPT_PIN 27  // use pin 2 on Arduino Uno & most boards
-#define BUZZER 14
-#define VOLTAGE 4
-#define LOW_VOLTAGE 7.0
-#define NEOPIXEL_PIN 15
-#define PWM_LED_PIN 5
-#define IR_PIN 23
-#define TOUCH0 12
-#define TOUCH1 13
-#define TOUCH2 32
-#define TOUCH3 33
-#define IMU_MPU6050
-#define I2C_EEPROM_ADDRESS 0x54  // Address of i2c eeprom chip
+  #define PWM_NUM 16
+  #define INTERRUPT_PIN 27  // use pin 2 on Arduino Uno & most boards
+  #define BUZZER 14
+  #define VOLTAGE 4
+  #define LOW_VOLTAGE 7.0
+  #define NEOPIXEL_PIN 15
+  #define PWM_LED_PIN 5
+  #define IR_PIN 23
+  #define TOUCH0 12
+  #define TOUCH1 13
+  #define TOUCH2 32
+  #define TOUCH3 33
+  #define IMU_MPU6050
+  #define I2C_EEPROM_ADDRESS 0x54  // Address of i2c eeprom chip
 // L:Left R:Right F:Front B:Back   LF,        RF,    RB,   LB
 
 const uint8_t PWM_pin[PWM_NUM] = {
@@ -244,11 +243,11 @@ double rate = 1.0 * MAX_READING / BASE_RANGE;
 
 #define DOF 16
 #if defined NYBBLE || defined BITTLE
-#define WALKING_DOF 8
-#define GAIT_ARRAY_DOF 8
+  #define WALKING_DOF 8
+  #define GAIT_ARRAY_DOF 8
 #else  // CUB
-#define WALKING_DOF 12
-#define GAIT_ARRAY_DOF 8
+  #define WALKING_DOF 12
+  #define GAIT_ARRAY_DOF 8
 #endif
 
 enum ServoModel_t {
@@ -457,17 +456,17 @@ int8_t middleShift[] = { 0, 15, 0, 0,
                          10, 10, -10, -10,
                          -30, -30, 30, 30 };
 #elif defined BITTLE
-#ifndef MINI
+  #ifndef MINI
 int8_t middleShift[] = { 0, -90, 0, 0,
                          -45, -45, -45, -45,
                          55, 55, -55, -55,
                          -55, -55, -55, -55 };
-#else
+  #else
 int8_t middleShift[] = { 0, 0, 0, 0,
                          0, 0, 0, 0,
                          0, 0, 0, 0,
                          -15, -15, -15, -15 };
-#endif
+  #endif
 
 #else  // CUB
 int8_t middleShift[] = { 0, 15, 0, 0,
@@ -505,14 +504,14 @@ int8_t rotationDirection[] = { 1, -1, -1, 1,
                                1, -1, 1, -1,
                                1, -1, -1, 1,
                                -1, 1, 1, -1 };
-#ifdef BITTLE
+  #ifdef BITTLE
 int angleLimit[][2] = {
   { -120, 120 },
-#ifdef ROBOT_ARM
+    #ifdef ROBOT_ARM
   { -10, 180 },
-#else
+    #else
   { -85, 85 },
-#endif
+    #endif
   { -120, 120 },
   { -120, 120 },
 
@@ -530,7 +529,7 @@ int angleLimit[][2] = {
   { -80, 200 },
   { -80, 200 },
 };
-#else  // Nybble
+  #else  // Nybble
 int angleLimit[][2] = {
   { -120, 120 },
   { -75, 35 },
@@ -549,7 +548,7 @@ int angleLimit[][2] = {
   { -80, 80 },
   { -80, 80 },
 };
-#endif
+  #endif
 #endif
 
 #ifdef X_LEG
@@ -596,20 +595,20 @@ int balanceSlope[2] = { 1, 1 };  // roll, pitch
 #include <Wire.h>
 #include "configConstants.h"
 #ifdef BT_BLE
-#include "bleUart.h"
+  #include "bleUart.h"
 #endif
 #ifdef BT_CLIENT
-#include "bleClient.h"
+  #include "bleClient.h"
 #endif
 #ifdef WEB_SERVER
-#include "webServer.h"
+  #include "webServer.h"
 #endif
 #include "io.h"
 #ifdef GYRO_PIN
-#include "imu.h"
+  #include "imu.h"
 #endif
 #ifdef IR_PIN
-#include "infrared.h"
+  #include "infrared.h"
 #endif
 #include "espServo.h"
 #include "motion.h"
@@ -618,7 +617,7 @@ int balanceSlope[2] = { 1, 1 };  // roll, pitch
 #include "skill.h"
 #include "moduleManager.h"
 #ifdef NEOPIXEL_PIN
-#include "led.h"
+  #include "led.h"
 #endif
 #include "reaction.h"
 #include "qualityAssurance.h"

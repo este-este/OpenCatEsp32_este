@@ -77,9 +77,9 @@ byte imuBad2[] = { 20, 12, 18, 12, 16, 12,
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
-#endif
+  #endif
 
 /* =========================================================================
    NOTE: In addition to connection 3.3v, GND, SDA, and SCL, this sketch
@@ -196,11 +196,11 @@ public:
       for (byte i = 0; i < 3; i++) {  // no need to flip yaw
         ypr[i] *= degPerRad;
         a_real[i] = *xyzReal[i] / 8192.0 * GRAVITY;
-#ifdef BiBoard_V0_1  // # rotate 180 degree
+  #ifdef BiBoard_V0_1  // # rotate 180 degree
         ypr[i] = -ypr[i];
         if (i != 2)
           a_real[i] = -a_real[i];
-#endif
+  #endif
       }
       return true;
     }
@@ -209,11 +209,11 @@ public:
 
   void mpu6050Setup(bool calibrateQ = true) {
     // join I2C bus (I2Cdev library doesn't do this automatically)
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     Wire.setClock(400000);  // 400kHz I2C clock. Comment this line if having compilation difficulties
-#elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+  #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
     Fastwire::setup(400, true);
-#endif
+  #endif
       // initialize serial communication
     // (115200 chosen because it is required for Teapot Demo output, but it's
     // really up to you depending on your project)
@@ -230,12 +230,12 @@ public:
     do {
       // initialize device
       PTLF("\nInitializing MPU6050...");
-#if defined CONFIG_DISABLE_HAL_LOCKS && CONFIG_DISABLE_HAL_LOCKS == 1
+  #if defined CONFIG_DISABLE_HAL_LOCKS && CONFIG_DISABLE_HAL_LOCKS == 1
       PTL("OK");
       PTL("If the program stucks, reinstall Arduino ESP32 boards version 2.0.12. Newer version may cause bugs!");
-#else
+  #else
       PTL("If the program stucks, modify the header file:\n  https://docs.petoi.com/arduino-ide/upload-sketch-for-biboard#sdkconfig.h");
-#endif
+  #endif
       initialize();
       // pinMode(INTERRUPT_PIN, INPUT);
       // verify connection
@@ -251,11 +251,11 @@ public:
     devStatus = dmpInitialize();
     PT("MPU offsets: ");
     for (byte m = 0; m < 6; m++) {
-#ifdef I2C_EEPROM_ADDRESS
+  #ifdef I2C_EEPROM_ADDRESS
       mpuOffset[m] = i2c_eeprom_read_int16(EEPROM_MPU + m * 2);
-#else
+  #else
       mpuOffset[m] = config.getShort(("mpu" + String(m)).c_str());
-#endif
+  #endif
       PTT(mpuOffset[m], '\t');
     }
     PTL();
@@ -274,14 +274,14 @@ public:
         PTLF("Calibrate MPU6050...");
         CalibrateAccel(20);
         CalibrateGyro(20);
-#ifdef I2C_EEPROM_ADDRESS
+  #ifdef I2C_EEPROM_ADDRESS
         i2c_eeprom_write_int16(EEPROM_MPU, getXAccelOffset());
         i2c_eeprom_write_int16(EEPROM_MPU + 2, getYAccelOffset());
         i2c_eeprom_write_int16(EEPROM_MPU + 4, getZAccelOffset());
         i2c_eeprom_write_int16(EEPROM_MPU + 6, getXGyroOffset());
         i2c_eeprom_write_int16(EEPROM_MPU + 8, getYGyroOffset());
         i2c_eeprom_write_int16(EEPROM_MPU + 10, getZGyroOffset());
-#else
+  #else
         config.putShort("mpu0", getXAccelOffset());
         config.putShort("mpu1", getYAccelOffset());
         config.putShort("mpu2", getZAccelOffset());
@@ -289,7 +289,7 @@ public:
         config.putShort("mpu4", getYGyroOffset());
         config.putShort("mpu5", getZGyroOffset());
 
-#endif
+  #endif
         PrintActiveOffsets();
       }
       // turn on the DMP, now that it's ready
@@ -323,7 +323,7 @@ public:
     read_mpu6050();
   }
   void print6AxisMacro() {
-#ifdef OUTPUT_READABLE_QUATERNION
+  #ifdef OUTPUT_READABLE_QUATERNION
     // display quaternion values in easy matrix form: w x y z
     PT("quat\t");
     PT(q.w);
@@ -334,9 +334,9 @@ public:
     PT("\t");
     PT(q.z);
     PT("\t");
-#endif
+  #endif
 
-#ifdef OUTPUT_READABLE_EULER
+  #ifdef OUTPUT_READABLE_EULER
     // display Euler angles in degrees
     PT("euler\t");
     PT(euler[0] * 180 / M_PI);
@@ -345,9 +345,9 @@ public:
     PT("\t");
     PT(euler[2] * 180 / M_PI);
     PT("\t");
-#endif
+  #endif
 
-#ifdef OUTPUT_READABLE_YAWPITCHROLL
+  #ifdef OUTPUT_READABLE_YAWPITCHROLL
     // display angles in degrees
     PT("ypr\t");
     PT(ypr[0]);
@@ -373,9 +373,9 @@ public:
       PT(gy.z);
       PT("\t");
     */
-#endif
+  #endif
 
-#ifdef OUTPUT_READABLE_WORLDACCEL
+  #ifdef OUTPUT_READABLE_WORLDACCEL
     // display initial world-frame acceleration, adjusted to remove gravity
     // and rotated based on known orientation from quaternion
     PT("aworld\t");
@@ -385,16 +385,16 @@ public:
     PT("\t");
     PT(aaWorld.z);
     PT("\t");
-#endif
+  #endif
 
-#ifdef OUTPUT_READABLE_REALACCEL
+  #ifdef OUTPUT_READABLE_REALACCEL
     // display real acceleration, adjusted to remove gravity
     PT("areal\t");
     PT(aaReal.x);
     PT("\t");
     PT(aaReal.y);
     PT("\t");
-#endif
+  #endif
     PT("areal.z\t");
     PT(aaReal.z);  // becomes negative when flipped
     PT("\t");
@@ -412,7 +412,7 @@ mpu6050p mpu;
 #endif
 
 #ifdef IMU_ICM42670
-#include "icm42670/petoi_icm42670p.h"
+  #include "icm42670/petoi_icm42670p.h"
 
 imu42670p icm(Wire, 1);
 
@@ -489,23 +489,23 @@ void print6Axis() {
   char buffer[50];  // Adjust buffer size as needed
 #ifdef IMU_ICM42670
   if (icmQ) {
-#ifdef PRINT_ACCELERATION
+  #ifdef PRINT_ACCELERATION
     sprintf(buffer, "ICM:%6.1f%6.1f%6.1f%7.1f%7.1f%7.1f\t",  //
             icm.a_real[0], icm.a_real[1], icm.a_real[2], icm.ypr[0], icm.ypr[1], icm.ypr[2]);
-#else
+  #else
     sprintf(buffer, "ICM%7.1f%7.1f%7.1f\t", icm.ypr[0], icm.ypr[1], icm.ypr[2]);
-#endif
+  #endif
     printToAllPorts(buffer, 0);
   }
 #endif
 #ifdef IMU_MPU6050
   if (mpuQ) {
-#ifdef PRINT_ACCELERATION
+  #ifdef PRINT_ACCELERATION
     sprintf(buffer, "MCU:%6.1f%6.1f%6.1f%7.1f%7.1f%7.1f",                                      // 7x6 = 42
             mpu.a_real[0], mpu.a_real[1], mpu.a_real[2], mpu.ypr[0], mpu.ypr[1], mpu.ypr[2]);  //, aaWorld.z);
-#else
+  #else
     sprintf(buffer, "MCU%7.1f%7.1f%7.1f", mpu.ypr[0], mpu.ypr[1], mpu.ypr[2]);
-#endif
+  #endif
     printToAllPorts(buffer, 0);
   }
 #endif
