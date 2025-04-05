@@ -70,6 +70,50 @@ void loop() {
   playLight();
 #endif
   reaction();
+
+    // TD-ee test section (move elsewhere for keeping)
+  if (!hasRun)
+  {
+    delay (5000);
+
+    ptap(__cplusplus, enumPrintNewLine::Yes);  // prints 201103   current gcc uses C++11
+
+     printToAllPorts("", enumPrintNewLine::Yes);
+
+    // Integer Type IS formatted
+    printToAllPorts(255, DEC, enumPrintNewLine::Yes);   // prints 255   Integer Type default = DEC
+    printToAllPorts(255, HEX, enumPrintNewLine::Yes);   // prints FF
+    printToAllPorts(255, OCT, enumPrintNewLine::Yes);   // prints 377
+    printToAllPorts(255, BIN, enumPrintNewLine::Yes);   // prints 11111111
+
+     printToAllPorts("", enumPrintNewLine::Yes);
+
+    // Floating-Point Type IS formatted
+    printToAllPorts(3.14159, 4, enumPrintNewLine::Yes);   // prints 3.1416 (note that it rounds!)
+    printToAllPorts(3.14159, 2, enumPrintNewLine::Yes);   // prints 3.14   Floating-Point Type default = 2
+    printToAllPorts(3.14159, 0, enumPrintNewLine::Yes);   // prints 3
+
+     printToAllPorts("", enumPrintNewLine::Yes);
+
+    // Character Type IS formatted
+    printToAllPorts('A', DEC, enumPrintNewLine::Yes);   // prints 65
+    printToAllPorts('A', HEX, enumPrintNewLine::Yes);   // prints 41
+    printToAllPorts('A', OCT, enumPrintNewLine::Yes);   // prints 101
+    printToAllPorts('A', BIN, enumPrintNewLine::Yes);   // prints 1000001
+
+     printToAllPorts("", enumPrintNewLine::Yes);
+
+    // Boolean Type is NOT formatted
+    bool flag = true;
+    printToAllPorts(flag, 2, enumPrintNewLine::Yes);   // prints 1
+
+    // String Type is NOT formatted
+//    printToAllPorts("Hello", 2, enumPrintNewLine::Yes);  // As designed, the static_assert causes this line to throw a compile error.  
+//    const char* message = "World";
+//    printToAllPorts(message, 2, enumPrintNewLine::Yes);  // As designed, the static_assert causes this line to throw a compile error.  
+
+    hasRun = true;
+  }
 }
 
 #ifdef QUICK_DEMO  // enter XQ in the serial monitor to activate the following section

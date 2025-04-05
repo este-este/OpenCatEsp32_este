@@ -649,6 +649,34 @@ float RollPitchDeviation[2];
 float currentAdjust[DOF] = {};
 int balanceSlope[2] = { 1, 1 };  // roll, pitch
 
+
+bool hasRun = false;  // For run-once testing in loop()
+#define ptap printToAllPorts  // Use to shorten call to printToAllPorts()
+
+enum enumPrintNewLine   // Used by printToAllPorts()
+  {
+    Yes,
+    No
+  };
+
+#if true    // For testing only
+template<typename T>
+void printToAllPorts(T item, enumPrintNewLine printNewLine);  // Forward declaration (must include default value here and NOT in the definition)
+
+template<typename N>
+void printToAllPorts(N item, unsigned int format, enumPrintNewLine printNewLine);  // Forward declaration (must include default value here and NOT in the definition)
+#endif
+
+
+#if false   // For release
+template<typename T>
+void printToAllPorts(T item, enumPrintNewLine printNewLine = enumPrintNewLine::Yes);  // Forward declaration (must include default value here and NOT in the definition)
+
+template<typename N>
+void printToAllPorts(N item, unsigned int format, enumPrintNewLine printNewLine = enumPrintNewLine::Yes);  // Forward declaration (must include default value here and NOT in the definition)
+#endif
+
+
 #include "tools.h"
 #include "QList/QList.h"
 #include "taskQueue.h"
